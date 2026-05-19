@@ -175,11 +175,28 @@ const fallbackHistory = [
   { id: "fallback-3", date: "Oct 22, 2023", level: "Low (22%)", action: "Morning Yoga", sentiment: "Positive" },
 ];
 
+const publicViews = new Set(["landing", "login", "register"]);
+
+function readPublicView() {
+  const stateView = window.history.state?.publicView;
+  if (publicViews.has(stateView)) {
+    return stateView;
+  }
+
+  const hashView = window.location.hash.replace("#", "");
+  return publicViews.has(hashView) ? hashView : "landing";
+}
+
+function publicViewUrl(view) {
+  const { pathname, search } = window.location;
+  return view === "landing" ? `${pathname}${search}` : `${pathname}${search}#${view}`;
+}
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => localStorage.getItem("mindtrack-session") === "active",
   );
-  const [publicView, setPublicView] = useState("landing");
+  const [publicView, setPublicView] = useState(readPublicView);
   const [activeView, setActiveView] = useState("dashboard");
   const [form, setForm] = useState(initialForm);
   const [history, setHistory] = useState([]);
@@ -219,8 +236,30 @@ function App() {
   }, [isAuthenticated]);
 
   useEffect(() => {
+    const currentView = readPublicView();
+    window.history.replaceState({ ...window.history.state, publicView: currentView }, "", publicViewUrl(currentView));
+
+    function handlePopState() {
+      setPublicView(readPublicView());
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem("mindtrack-theme", theme);
   }, [theme]);
+
+  function navigatePublicView(view, mode = "push") {
+    const nextView = publicViews.has(view) ? view : "landing";
+    window.history[mode === "replace" ? "replaceState" : "pushState"](
+      { ...window.history.state, publicView: nextView },
+      "",
+      publicViewUrl(nextView),
+    );
+    setPublicView(nextView);
+  }
 
   async function refreshData() {
     setError("");
@@ -316,6 +355,7 @@ function App() {
     setShowNotifications(false);
     setShowSettingsMenu(false);
     setSearchTerm("");
+    navigatePublicView("landing", "replace");
   }
 
   function handleLogin(event) {
@@ -364,8 +404,8 @@ function App() {
       return (
         <LandingPage
           theme={theme}
-          onOpenLogin={() => setPublicView("login")}
-          onOpenRegister={() => setPublicView("register")}
+          onOpenLogin={() => navigatePublicView("login")}
+          onOpenRegister={() => navigatePublicView("register")}
         />
       );
     }
@@ -380,7 +420,7 @@ function App() {
           setRegisterForm={setRegisterForm}
           setShowPassword={setShowRegisterPassword}
           onSubmit={handleRegister}
-          onOpenLogin={() => setPublicView("login")}
+          onOpenLogin={() => navigatePublicView("login")}
         />
       );
     }
@@ -396,8 +436,7 @@ function App() {
         setRememberMe={setRememberMe}
         setShowPassword={setShowPassword}
         onSubmit={handleLogin}
-        onBack={() => setPublicView("landing")}
-        onOpenRegister={() => setPublicView("register")}
+        onOpenRegister={() => navigatePublicView("register")}
       />
     );
   }
@@ -743,15 +782,27 @@ function LandingPage({ theme, onOpenLogin, onOpenRegister }) {
         <h2>Common Questions</h2>
         <details open>
           <summary>Is my data secure?<ChevronDown size={18} /></summary>
-          <p>Your data is used for wellness tracking in this capstone prototype and is stored locally by the backend.</p>
+          <p>
+            Your data is used only to support wellness tracking and stress prediction inside this capstone prototype.
+            Prediction history is stored locally by the backend as JSON data, so the app can show previous results
+            without sending them to unrelated third-party services.
+          </p>
         </details>
         <details>
           <summary>How does the AI detect stress?<ChevronDown size={18} /></summary>
-          <p>The model combines self-reported indicators with digital activity features to estimate stress level.</p>
+          <p>
+            The AI combines self-reported indicators, academic pressure factors, and digital activity patterns such as
+            screen time, app usage, and productivity balance. These inputs are processed by the trained model to
+            estimate whether the current stress level is low, moderate, or high.
+          </p>
         </details>
         <details>
           <summary>Can I share results with my counselor?<ChevronDown size={18} /></summary>
-          <p>You can save a report from the results page and use it as a discussion aid.</p>
+          <p>
+            Yes. You can save the result from the prediction page and use it as a discussion aid with a counselor,
+            lecturer, or trusted support person. The report is meant to help explain patterns more clearly, not to
+            replace a professional mental health diagnosis.
+          </p>
         </details>
       </section>
 
@@ -900,8 +951,10 @@ function RegisterPage({
   return (
     <main className="register-page" data-theme={theme}>
       <header className="register-top-brand">
-        <span className="brand-mark">M</span>
-        <strong>MindTrack</strong>
+        <div>
+          <span className="brand-mark">M</span>
+          <strong>MindTrack</strong>
+        </div>
       </header>
 
       <section className="register-main">
