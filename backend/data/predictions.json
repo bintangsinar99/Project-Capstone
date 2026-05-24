@@ -1,1 +1,125 @@
-[]
+[
+  {
+    "id": "1de453f4-d2cc-481b-8819-87d9e029b4a1",
+    "created_at": "2026-05-20T13:17:28.177899+00:00",
+    "student_data": {
+      "anxiety_level": 18,
+      "self_esteem": 5,
+      "mental_health_history": 1,
+      "depression": 20,
+      "headache": 4,
+      "sleep_quality": 1,
+      "academic_performance": 1,
+      "study_load": 5,
+      "future_career_concerns": 5,
+      "social_support": 1,
+      "peer_pressure": 5,
+      "bullying": 4,
+      "Age": 22,
+      "Total_App_Usage_Hours": 6.0,
+      "Daily_Screen_Time_Hours": 12.0,
+      "Number_of_Apps_Used": 16,
+      "Social_Media_Usage_Hours": 4.5,
+      "Productivity_App_Usage_Hours": 0.5,
+      "Gaming_App_Usage_Hours": 4.0,
+      "digital_overload_score": 20.0,
+      "productivity_balance_score": 0.05,
+      "study_stress_ratio": 4.5,
+      "mental_risk_score": 50
+    },
+    "result": {
+      "stress_level": 2,
+      "stress_class": "Tinggi",
+      "confidence": 0.963,
+      "probabilities": {
+        "rendah": 0.0215,
+        "sedang": 0.0155,
+        "tinggi": 0.963
+      },
+      "recommendation": "Indikasi stres tinggi terdeteksi. Evaluasi jadwal digital, kualitas tidur, dan pertimbangkan berbicara dengan dosen wali atau konselor kampus.",
+      "ai_advice": "Saran AI generatif belum aktif. Isi GROQ_API_KEY pada environment variable untuk mengaktifkannya."
+    }
+  },
+  {
+    "id": "b2dd04d1-5fe2-46d8-9fdb-0963106da251",
+    "created_at": "2026-05-20T13:17:13.121877+00:00",
+    "student_data": {
+      "anxiety_level": 14,
+      "self_esteem": 20,
+      "mental_health_history": 0,
+      "depression": 20,
+      "headache": 2,
+      "sleep_quality": 2,
+      "academic_performance": 3,
+      "study_load": 2,
+      "future_career_concerns": 3,
+      "social_support": 3,
+      "peer_pressure": 5,
+      "bullying": 3,
+      "Age": 22,
+      "Total_App_Usage_Hours": 6.0,
+      "Daily_Screen_Time_Hours": 7.0,
+      "Number_of_Apps_Used": 16,
+      "Social_Media_Usage_Hours": 3.0,
+      "Productivity_App_Usage_Hours": 2.0,
+      "Gaming_App_Usage_Hours": 2.0,
+      "digital_overload_score": 14.0,
+      "productivity_balance_score": 0.5,
+      "study_stress_ratio": 1.0,
+      "mental_risk_score": 30
+    },
+    "result": {
+      "stress_level": 1,
+      "stress_class": "Sedang",
+      "confidence": 0.9177,
+      "probabilities": {
+        "rendah": 0.0314,
+        "sedang": 0.9177,
+        "tinggi": 0.0509
+      },
+      "recommendation": "Ada indikasi stres sedang. Coba kurangi screen time berlebih, rapikan beban belajar, dan sisihkan waktu istirahat yang konsisten.",
+      "ai_advice": "Saran AI generatif belum aktif. Isi GROQ_API_KEY pada environment variable untuk mengaktifkannya."
+    }
+  },
+  {
+    "id": "64225aa9-0232-40e5-9b9c-4287882b887e",
+    "created_at": "2026-05-20T13:16:33.843471+00:00",
+    "student_data": {
+      "anxiety_level": 14,
+      "self_esteem": 20,
+      "mental_health_history": 0,
+      "depression": 20,
+      "headache": 2,
+      "sleep_quality": 2,
+      "academic_performance": 3,
+      "study_load": 2,
+      "future_career_concerns": 3,
+      "social_support": 3,
+      "peer_pressure": 5,
+      "bullying": 3,
+      "Age": 22,
+      "Total_App_Usage_Hours": 6.0,
+      "Daily_Screen_Time_Hours": 7.0,
+      "Number_of_Apps_Used": 16,
+      "Social_Media_Usage_Hours": 3.0,
+      "Productivity_App_Usage_Hours": 2.0,
+      "Gaming_App_Usage_Hours": 2.0,
+      "digital_overload_score": 14.0,
+      "productivity_balance_score": 0.5,
+      "study_stress_ratio": 1.0,
+      "mental_risk_score": 30
+    },
+    "result": {
+      "stress_level": 1,
+      "stress_class": "Sedang",
+      "confidence": 0.9177,
+      "probabilities": {
+        "rendah": 0.0314,
+        "sedang": 0.9177,
+        "tinggi": 0.0509
+      },
+      "recommendation": "Ada indikasi stres sedang. Coba kurangi screen time berlebih, rapikan beban belajar, dan sisihkan waktu istirahat yang konsisten.",
+      "ai_advice": "Saran AI generatif belum aktif. Isi GROQ_API_KEY pada environment variable untuk mengaktifkannya."
+    }
+  }
+]
