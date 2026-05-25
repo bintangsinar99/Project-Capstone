@@ -769,11 +769,11 @@ function LandingPage({ theme, onOpenLogin, onOpenRegister }) {
       <footer className="landing-footer">
         <div>
           <strong>MindTrack</strong>
-          <p>Supportive intelligence for mental wellbeing.</p>
+          <p>Kecerdasan suportif untuk kesehatan mental.</p>
         </div>
-        <div><strong>Product</strong><span>Features</span><span>How it Works</span><span>Research</span></div>
-        <div><strong>Support</strong><span>Contact Support</span><span>Privacy Policy</span><span>Terms of Service</span></div>
-        <div><strong>Stay Connected</strong><span>Careers</span><span>Press Kit</span></div>
+        <div><strong>Produk</strong><span>Fitur</span><span>Cara Kerja</span><span>Riset</span></div>
+        <div><strong>Dukungan</strong><span>Hubungi Dukungan</span><span>Kebijakan Privasi</span><span>Syarat Layanan</span></div>
+        <div><strong>Tetap Terhubung</strong><span>Karir</span><span>Press Kit</span></div>
       </footer>
     </main>
   );
@@ -950,12 +950,12 @@ function RegisterPage({
       <footer className="register-footer">
         <div>
           <strong>MindTrack AI</strong>
-          <span>(c) 2024 MindTrack AI. Supportive Intelligence for Mental Wellbeing.</span>
+          <span>(c) 2024 MindTrack AI. Kecerdasan Suportif untuk Kesehatan Mental.</span>
         </div>
         <nav>
-          <button type="button">Privacy Policy</button>
-          <button type="button">Terms of Service</button>
-          <button type="button">Contact Support</button>
+          <button type="button">Kebijakan Privasi</button>
+          <button type="button">Syarat Layanan</button>
+          <button type="button">Hubungi Dukungan</button>
         </nav>
       </footer>
     </main>
@@ -1231,20 +1231,20 @@ function AiRecommendation({ latestResult, startSession }) {
     <article className="ai-card">
       <div className="ai-title">
         <Sparkles size={24} />
-        <h2>AI Recommendation</h2>
+        <h2>Rekomendasi AI</h2>
       </div>
-      <p>{latestResult?.ai_advice || "Based on your elevated indicators, we recommend a short wellness pause."}</p>
+      <p>{latestResult?.ai_advice || "Berdasarkan indikatormu yang meningkat, kami merekomendasikan istirahat kesehatan singkat."}</p>
       <div className="priority-action">
         <div className="action-icon">
           <Activity size={24} />
         </div>
         <div>
-          <span>Priority Action</span>
-          <strong>10-minute Mindfulness Meditation</strong>
+          <span>Tindakan Prioritas</span>
+          <strong>Meditasi Mindfulness 10 Menit</strong>
         </div>
       </div>
-      <button className="primary-button" type="button" onClick={() => startSession("10-minute Mindfulness Meditation")}>
-        Start Session
+      <button className="primary-button" type="button" onClick={() => startSession("Meditasi Mindfulness 10 Menit")}>
+        Mulai Sesi
       </button>
     </article>
   );
