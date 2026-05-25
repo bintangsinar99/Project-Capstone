@@ -11,6 +11,27 @@ from app.schemas import StudentData
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 MODEL_DIR = BASE_DIR / "models"
+
+
+def _load_local_env() -> None:
+    for env_path in (BASE_DIR / ".env", BASE_DIR.parent / ".env"):
+        if not env_path.exists():
+            continue
+
+        for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and value and not os.environ.get(key):
+                os.environ[key] = value
+
+
+_load_local_env()
+
 MODEL_PATH = Path(os.getenv("MODEL_PATH", MODEL_DIR / "stress_mlp_final.keras"))
 ENSEMBLE_META_PATH = Path(os.getenv("ENSEMBLE_META_PATH", MODEL_DIR / "ensemble_meta.json"))
 SCALER_PATH = Path(os.getenv("SCALER_PATH", MODEL_DIR / "scaler_params.json"))
@@ -154,7 +175,9 @@ def add_engineered_features(data: dict) -> dict:
 
 
 def get_ai_advice(stress_class: str, confidence: float, data: dict) -> str:
-    if not GROQ_API_KEY:
+    _load_local_env()
+    api_key = os.getenv("GROQ_API_KEY", GROQ_API_KEY).strip()
+    if not api_key:
         return "Saran AI generatif belum aktif. Isi GROQ_API_KEY pada environment variable untuk mengaktifkannya."
 
     try:
@@ -172,7 +195,7 @@ def get_ai_advice(stress_class: str, confidence: float, data: dict) -> str:
         response = requests.post(
             GROQ_URL,
             headers={
-                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
             },
             json={

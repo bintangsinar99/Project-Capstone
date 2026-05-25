@@ -5,6 +5,17 @@ const api = axios.create({
   timeout: 10000,
 });
 
+function authHeaders() {
+  const username = localStorage.getItem("mindtrack-username");
+  const token = localStorage.getItem("mindtrack-token");
+  const role = localStorage.getItem("mindtrack-role");
+  return {
+    ...(username ? { "X-MindTrack-Username": username } : {}),
+    ...(token ? { "X-MindTrack-Token": token } : {}),
+    ...(role ? { "X-MindTrack-Role": role } : {}),
+  };
+}
+
 // ── Auth ────────────────────────────────────────────────────────────────────
 
 export async function register(username, password) {
@@ -20,22 +31,27 @@ export async function login(username, password) {
 // ── Predictions ─────────────────────────────────────────────────────────────
 
 export async function createPrediction(payload) {
-  const response = await api.post("/api/predictions", payload);
+  const response = await api.post("/api/predictions", payload, { headers: authHeaders() });
   return response.data;
 }
 
 export async function getPredictions() {
-  const response = await api.get("/api/predictions");
+  const response = await api.get("/api/predictions", { headers: authHeaders() });
   return response.data;
 }
 
 export async function deletePrediction(id) {
-  await api.delete(`/api/predictions/${id}`);
+  await api.delete(`/api/predictions/${id}`, { headers: authHeaders() });
 }
 
 // ── Health ───────────────────────────────────────────────────────────────────
 
 export async function checkApiHealth() {
   const response = await api.get("/api/health");
+  return response.data;
+}
+
+export async function getAdminOverview() {
+  const response = await api.get("/api/admin/overview", { headers: authHeaders() });
   return response.data;
 }

@@ -40,6 +40,7 @@ import {
   checkApiHealth,
   createPrediction,
   deletePrediction,
+  getAdminOverview,
   getPredictions,
   login as apiLogin,
   register as apiRegister,
@@ -170,15 +171,15 @@ const interventions = [
   [Zap, "Digital Detox", "Eyes off screen."],
 ];
 
-const fallbackHistory = [
-  { id: "fallback-1", date: "Oct 24, 2023", level: "Low (18%)", action: "Deep Breathing Session", sentiment: "Positive" },
-  { id: "fallback-2", date: "Oct 23, 2023", level: "Moderate (45%)", action: "Guided Meditation", sentiment: "Neutral" },
-  { id: "fallback-3", date: "Oct 22, 2023", level: "Low (22%)", action: "Morning Yoga", sentiment: "Positive" },
-];
-
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => localStorage.getItem("mindtrack-session") === "active",
+  );
+  const [currentUsername, setCurrentUsername] = useState(
+    () => localStorage.getItem("mindtrack-username") || "",
+  );
+  const [currentRole, setCurrentRole] = useState(
+    () => localStorage.getItem("mindtrack-role") || "user",
   );
   const [publicView, setPublicView] = useState("landing");
   const [activeView, setActiveView] = useState("dashboard");
@@ -200,6 +201,8 @@ function App() {
   const [registerForm, setRegisterForm] = useState({ username: "", password: "" });
   const [registerError, setRegisterError] = useState("");
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [adminOverview, setAdminOverview] = useState(null);
+  const [adminError, setAdminError] = useState("");
 
   const latest = history[0];
   const latestResult = latest?.result;
@@ -208,10 +211,19 @@ function App() {
   const filteredHistory = useMemo(() => filterHistory(history, searchTerm), [history, searchTerm]);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    if (currentRole === "admin") {
+      refreshAdminOverview();
+      return;
+    }
+
+    if (currentRole === "user") {
       refreshData();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, currentUsername, currentRole]);
 
   useEffect(() => {
     localStorage.setItem("mindtrack-theme", theme);
@@ -308,6 +320,14 @@ function App() {
     localStorage.removeItem("mindtrack-session");
     localStorage.removeItem("mindtrack-username");
     localStorage.removeItem("mindtrack-token");
+    localStorage.removeItem("mindtrack-role");
+    setCurrentUsername("");
+    setCurrentRole("user");
+    setHistory([]);
+    setHealth(null);
+    setAdminOverview(null);
+    setAdminError("");
+    setError("");
     setIsAuthenticated(false);
     setActiveView("dashboard");
     setShowNotifications(false);
@@ -327,6 +347,11 @@ function App() {
       localStorage.setItem("mindtrack-session", "active");
       localStorage.setItem("mindtrack-username", data.username);
       localStorage.setItem("mindtrack-token", data.token);
+      localStorage.setItem("mindtrack-role", data.role || "user");
+      setCurrentUsername(data.username);
+      setCurrentRole(data.role || "user");
+      setHistory([]);
+      setActiveView("dashboard");
       setIsAuthenticated(true);
       showToast("Login berhasil.");
     } catch (err) {
@@ -358,6 +383,11 @@ function App() {
       localStorage.setItem("mindtrack-session", "active");
       localStorage.setItem("mindtrack-username", data.username);
       localStorage.setItem("mindtrack-token", data.token);
+      localStorage.setItem("mindtrack-role", data.role || "user");
+      setCurrentUsername(data.username);
+      setCurrentRole(data.role || "user");
+      setHistory([]);
+      setActiveView("dashboard");
       setIsAuthenticated(true);
       showToast("Registrasi berhasil.");
     } catch (err) {
@@ -403,6 +433,31 @@ function App() {
         onSubmit={handleLogin}
         onBack={() => setPublicView("landing")}
         onOpenRegister={() => setPublicView("register")}
+      />
+    );
+  }
+
+  async function refreshAdminOverview() {
+    setAdminError("");
+    try {
+      const data = await getAdminOverview();
+      setAdminOverview(data);
+      setStatus("online");
+    } catch (err) {
+      setStatus("offline");
+      setAdminError(err.response?.data?.detail || "Admin overview gagal dimuat.");
+    }
+  }
+
+  if (currentRole === "admin") {
+    return (
+      <AdminDashboard
+        theme={theme}
+        username={currentUsername}
+        overview={adminOverview}
+        error={adminError}
+        onRefresh={refreshAdminOverview}
+        onLogout={handleLogout}
       />
     );
   }
@@ -475,7 +530,7 @@ function App() {
             >
               <Settings size={22} />
             </button>
-            <div className="avatar">A</div>
+            <div className="avatar">{getUserInitial(currentUsername)}</div>
           </div>
           {showNotifications && (
             <NotificationsPanel status={status} history={history} onClose={() => setShowNotifications(false)} />
@@ -520,6 +575,7 @@ function App() {
             form={form}
             latestResult={latestResult}
             history={history}
+            username={currentUsername}
             setActiveView={setActiveView}
             startSession={startSession}
           />
@@ -557,6 +613,132 @@ function App() {
         {activeSession && <SessionModal session={activeSession} onClose={() => setActiveSession(null)} />}
       </section>
     </main>
+  );
+}
+
+function AdminDashboard({ theme, username, overview, error, onRefresh, onLogout }) {
+  const recent = overview?.recent_predictions || [];
+
+  return (
+    <main className="admin-page" data-theme={theme}>
+      <aside className="admin-sidebar">
+        <div className="brand">
+          <span className="brand-mark">M</span>
+          <div>
+            <strong>MindTrack Admin</strong>
+            <small>System Health Dashboard</small>
+          </div>
+        </div>
+        <div className="admin-profile">
+          <div className="avatar">{getUserInitial(username)}</div>
+          <div>
+            <strong>{formatUsername(username)}</strong>
+            <span>Administrator</span>
+          </div>
+        </div>
+        <button className="screening-button" type="button" onClick={onRefresh}>
+          <RefreshCw size={18} />
+          Refresh Status
+        </button>
+        <button className="logout-button" type="button" onClick={onLogout}>
+          <LogOut size={20} />
+          Logout
+        </button>
+      </aside>
+
+      <section className="admin-main">
+        <header className="admin-header">
+          <div>
+            <span>Admin Monitoring</span>
+            <h1>System Health</h1>
+            <p>Cek kondisi API, model, database, user, dan prediksi terbaru dari satu halaman.</p>
+          </div>
+          <button className="primary-button" type="button" onClick={onRefresh}>
+            <RefreshCw size={18} />
+            Refresh
+          </button>
+        </header>
+
+        {error && <p className="error-message">{error}</p>}
+
+        <section className="admin-grid">
+          <AdminStatusCard
+            icon={Activity}
+            label="API Status"
+            value={overview?.api_status || "Checking"}
+            detail="FastAPI service"
+          />
+          <AdminStatusCard
+            icon={Brain}
+            label="Model"
+            value={overview?.model_loaded ? "Loaded" : "Not Ready"}
+            detail={overview?.model_mode || "Unknown mode"}
+          />
+          <AdminStatusCard
+            icon={ShieldCheck}
+            label="Auth Store"
+            value={overview?.auth_store || "-"}
+            detail="Login/register storage"
+          />
+          <AdminStatusCard
+            icon={User}
+            label="Users"
+            value={overview?.user_count ?? 0}
+            detail="Registered user accounts"
+          />
+          <AdminStatusCard
+            icon={BarChart3}
+            label="Predictions"
+            value={overview?.prediction_count ?? 0}
+            detail="Total saved assessments"
+          />
+          <AdminStatusCard
+            icon={CheckCircle2}
+            label="Loaded Models"
+            value={overview?.n_models ?? 0}
+            detail="Model files available"
+          />
+        </section>
+
+        <section className="admin-panel">
+          <div className="table-title">
+            <h2>Recent Predictions</h2>
+            <span>{recent.length} latest records</span>
+          </div>
+          {recent.length === 0 ? (
+            <div className="dashboard-empty-history">
+              <History size={26} />
+              <strong>Belum ada prediksi tersimpan</strong>
+              <span>Data akan muncul setelah user melakukan assessment.</span>
+            </div>
+          ) : (
+            <div className="admin-records">
+              {recent.map((item) => (
+                <article key={item.id}>
+                  <div>
+                    <strong>{item.username || "anonymous"}</strong>
+                    <span>{item.created_at ? new Date(item.created_at).toLocaleString("id-ID") : "-"}</span>
+                  </div>
+                  <p>{item.result?.stress_class || "Unknown"}</p>
+                  <small>{item.result?.recommendation || "No recommendation available."}</small>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </section>
+    </main>
+  );
+}
+
+function AdminStatusCard({ icon: Icon, label, value, detail }) {
+  return (
+    <article className="admin-card">
+      <Icon size={26} />
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{detail}</small>
+    </article>
   );
 }
 
@@ -962,62 +1144,70 @@ function RegisterPage({
   );
 }
 
-function DashboardView({ form, latestResult, history, setActiveView, startSession }) {
-  const stressClass = latestResult?.stress_class || "Low";
-  const confidence = latestResult ? Math.round(latestResult.confidence * 100) : 24;
+function DashboardView({ latestResult, history, username, setActiveView, startSession }) {
+  const hasAssessment = Boolean(latestResult);
+  const latestInput = history[0]?.student_data;
+  const stressClass = latestResult?.stress_class || "No Data";
+  const confidence = latestResult ? Math.round(latestResult.confidence * 100) : 0;
+  const displayName = formatUsername(username);
+  const sleepQuality = latestInput?.sleep_quality;
+  const screenTime = latestInput?.Daily_Screen_Time_Hours;
+  const studyLoad = latestInput?.study_load;
+  const mentalRisk = latestInput?.mental_risk_score;
+  const digitalOverload = latestInput?.digital_overload_score;
 
   return (
     <div className="view-stack">
       <section className="hero-dashboard">
-        <h2>Welcome back, Alex!</h2>
-        <p>Ready for your daily check-in? Your focus is currently improving.</p>
+        <h2>Welcome back, {displayName}!</h2>
+        <p>{hasAssessment ? "Ready for your daily check-in? Your focus is currently improving." : "Start your first assessment to personalize this dashboard."}</p>
       </section>
 
       <section className="metric-grid">
-        <article className="metric-card ring-card">
+        <article className={`metric-card ring-card ${hasAssessment ? "" : "empty-metric"}`}>
           <div className="stress-ring" style={{ "--progress": `${confidence}%` }}>
-            <strong>{confidence}%</strong>
+            <strong>{hasAssessment ? `${confidence}%` : "--"}</strong>
             <span>Index</span>
           </div>
           <p>Stress Level</p>
-          <h3>{stressClass}</h3>
+          <h3 className="stress-class-label">{stressClass}</h3>
         </article>
 
-        <article className="metric-card">
+        <article className={`metric-card ${hasAssessment ? "" : "empty-metric"}`}>
           <Moon className="metric-icon" size={34} />
-          <span className="status-pill">Good</span>
+          <span className="status-pill">{hasAssessment ? sleepQualityLabel(sleepQuality) : "Pending"}</span>
           <p>Sleep Quality</p>
-          <h3>{Math.max(4, form.sleep_quality + 4.5).toFixed(1)}h</h3>
-          <small>+45m from yesterday</small>
+          <h3>{hasAssessment ? `${sleepQuality}/5` : "--"}</h3>
+          <small>{hasAssessment ? sleepQualityHint(sleepQuality) : "Complete an assessment first"}</small>
         </article>
 
-        <article className="metric-card">
+        <article className={`metric-card ${hasAssessment ? "" : "empty-metric"}`}>
           <BarChart3 className="metric-icon" size={34} />
-          <span className="trend">-12%</span>
-          <p>Screen Balance</p>
-          <h3>{Math.floor(form.Daily_Screen_Time_Hours / 2)}h 20m</h3>
-          <small>Below average</small>
+          <span className="trend">{hasAssessment ? screenTimeLabel(screenTime) : "--"}</span>
+          <p>Screen Time</p>
+          <h3>{hasAssessment ? formatHours(screenTime) : "--"}</h3>
+          <small>{hasAssessment ? screenTimeHint(screenTime) : "Waiting for input data"}</small>
         </article>
       </section>
 
       <section className="dashboard-grid">
-        <AiRecommendation latestResult={latestResult} startSession={startSession} />
-        <article className="small-stat">
-          <Footprints size={26} />
-          <strong>42</strong>
-          <span>Active Minutes</span>
+        <AiRecommendation latestResult={latestResult} hasAssessment={hasAssessment} startSession={startSession} />
+        <article className={`small-stat ${hasAssessment ? "" : "empty-metric"}`}>
+          <BookOpen size={26} />
+          <strong>{hasAssessment ? `${studyLoad}/5` : "--"}</strong>
+          <span>Study Load</span>
         </article>
-        <article className="small-stat">
-          <Heart className="heart" size={28} fill="currentColor" />
-          <strong>72 <small>BPM</small></strong>
-          <span>Heart Rate</span>
+        <article className={`small-stat ${hasAssessment ? "" : "empty-metric"}`}>
+          <Brain size={28} />
+          <strong>{hasAssessment ? mentalRisk : "--"}</strong>
+          <span>Mental Risk</span>
         </article>
-        <article className="small-stat">
+        <article className={`small-stat ${hasAssessment ? "" : "empty-metric"}`}>
           <BarChart3 size={26} />
-          <strong>Focused</strong>
-          <span>Digital Usage</span>
+          <strong>{hasAssessment ? Math.round(digitalOverload) : "--"}</strong>
+          <span>Digital Overload</span>
         </article>
-        <StressTrend />
+        <StressTrend history={history} hasAssessment={hasAssessment} />
       </section>
 
       <HistoryTable history={history} setActiveView={setActiveView} />
@@ -1226,25 +1416,34 @@ function ResourcesView({ startSession }) {
   );
 }
 
-function AiRecommendation({ latestResult, startSession }) {
+function AiRecommendation({ latestResult, hasAssessment = true, startSession }) {
   return (
-    <article className="ai-card">
+    <article className={`ai-card ${hasAssessment ? "" : "empty-metric"}`}>
       <div className="ai-title">
         <Sparkles size={24} />
         <h2>Rekomendasi AI</h2>
       </div>
-      <p>{latestResult?.ai_advice || "Berdasarkan indikatormu yang meningkat, kami merekomendasikan istirahat kesehatan singkat."}</p>
+      <p>
+        {hasAssessment
+          ? latestResult?.ai_advice || "Berdasarkan indikatormu yang meningkat, kami merekomendasikan jeda wellness singkat."
+          : "Belum ada rekomendasi. Selesaikan assessment pertama untuk membuat saran yang personal."}
+      </p>
       <div className="priority-action">
         <div className="action-icon">
           <Activity size={24} />
         </div>
         <div>
           <span>Tindakan Prioritas</span>
-          <strong>Meditasi Mindfulness 10 Menit</strong>
+          <strong>{hasAssessment ? "Meditasi Mindfulness 10 Menit" : "Assessment dibutuhkan"}</strong>
         </div>
       </div>
-      <button className="primary-button" type="button" onClick={() => startSession("Meditasi Mindfulness 10 Menit")}>
-        Mulai Sesi
+      <button
+        className="primary-button"
+        type="button"
+        disabled={!hasAssessment}
+        onClick={() => startSession("Meditasi Mindfulness 10 Menit")}
+      >
+        {hasAssessment ? "Mulai Sesi" : "Belum Ada Sesi"}
       </button>
     </article>
   );
@@ -1277,31 +1476,46 @@ function ProbabilityBar({ label, value, tone }) {
   );
 }
 
-function StressTrend() {
+function StressTrend({ history, hasAssessment = true }) {
+  const trendPath = buildTrendPath(history);
+  const trendLabels = buildTrendLabels(history);
+
   return (
-    <article className="trend-card">
+    <article className={`trend-card ${hasAssessment ? "" : "empty-metric"}`}>
       <div>
         <h2>Stress Trend</h2>
-        <span>Last 7 Days</span>
+        <span>{hasAssessment ? `${Math.min(history.length, 7)} Records` : "No Data"}</span>
       </div>
-      <svg viewBox="0 0 520 180" role="img" aria-label="Stress trend line">
-        <path d="M20 125 C80 70 130 115 180 105 C250 88 250 28 320 36 C385 44 382 165 455 140 C490 128 485 65 505 55" />
-      </svg>
-      <div className="days">
-        <span>Mon</span>
-        <span>Tue</span>
-        <span>Wed</span>
-        <span>Thu</span>
-        <span>Fri</span>
-        <span>Sat</span>
-        <span>Sun</span>
-      </div>
+      {trendPath ? (
+        <>
+          <svg viewBox="0 0 520 180" role="img" aria-label="Stress trend line">
+            <path d={trendPath} />
+          </svg>
+          <div className="days">
+            {trendLabels.map((label) => (
+              <span key={label}>{label}</span>
+            ))}
+          </div>
+        </>
+      ) : hasAssessment ? (
+        <div className="trend-empty">
+          <BarChart3 size={34} />
+          <strong>Butuh minimal 2 assessment</strong>
+          <span>Tren akan terbentuk setelah ada beberapa hasil prediksi.</span>
+        </div>
+      ) : (
+        <div className="trend-empty">
+          <BarChart3 size={34} />
+          <strong>Belum ada tren</strong>
+          <span>Tren akan muncul setelah assessment pertama.</span>
+        </div>
+      )}
     </article>
   );
 }
 
 function HistoryTable({ history, setActiveView }) {
-  const rows = history.length ? history.slice(0, 3) : fallbackHistory;
+  const rows = history.slice(0, 3);
 
   return (
     <section className="history-table">
@@ -1311,20 +1525,34 @@ function HistoryTable({ history, setActiveView }) {
           View All
         </button>
       </div>
-      <div className="table-grid header">
-        <span>Date</span>
-        <span>Stress Level</span>
-        <span>Action Taken</span>
-        <span>Sentiment</span>
-      </div>
-      {rows.map((item) => (
-        <div className="table-grid" key={item.id}>
-          <span>{item.created_at ? new Date(item.created_at).toLocaleDateString("id-ID") : item.date}</span>
-          <span>{item.result?.stress_class || item.level}</span>
-          <span>{item.action || "Guided Meditation"}</span>
-          <span className="sentiment">{item.sentiment || "Positive"}</span>
+
+      {rows.length === 0 ? (
+        <div className="dashboard-empty-history">
+          <History size={26} />
+          <strong>Belum ada riwayat prediksi</strong>
+          <span>Mulai assessment pertama untuk membuat hasil khusus akun ini.</span>
+          <button className="text-button" type="button" onClick={() => setActiveView("prediction")}>
+            Start Assessment
+          </button>
         </div>
-      ))}
+      ) : (
+        <>
+          <div className="table-grid header">
+            <span>Date</span>
+            <span>Stress Level</span>
+            <span>Action Taken</span>
+            <span>Sentiment</span>
+          </div>
+          {rows.map((item) => (
+            <div className="table-grid" key={item.id}>
+              <span>{item.created_at ? new Date(item.created_at).toLocaleDateString("id-ID") : item.date}</span>
+              <span>{item.result?.stress_class || item.level}</span>
+              <span>{item.action || "Guided Meditation"}</span>
+              <span className="sentiment">{item.sentiment || "Positive"}</span>
+            </div>
+          ))}
+        </>
+      )}
     </section>
   );
 }
@@ -1493,6 +1721,69 @@ function filterHistory(history, searchTerm) {
   });
 }
 
+function formatHours(value) {
+  const hours = Number(value);
+  if (!Number.isFinite(hours)) {
+    return "--";
+  }
+  return `${hours.toFixed(1)}h`;
+}
+
+function sleepQualityLabel(value) {
+  if (value >= 4) return "Good";
+  if (value >= 3) return "Fair";
+  return "Needs care";
+}
+
+function sleepQualityHint(value) {
+  if (value >= 4) return "Sleep support is stable";
+  if (value >= 3) return "Keep a consistent sleep routine";
+  return "Prioritize rest and bedtime consistency";
+}
+
+function screenTimeLabel(value) {
+  if (value <= 5) return "Balanced";
+  if (value <= 8) return "Moderate";
+  return "High";
+}
+
+function screenTimeHint(value) {
+  if (value <= 5) return "Digital load looks manageable";
+  if (value <= 8) return "Consider planned screen breaks";
+  return "High usage may increase fatigue";
+}
+
+function buildTrendPath(history) {
+  const points = history
+    .slice(0, 7)
+    .reverse()
+    .map((item, index, records) => {
+      const level = Number(item.result?.stress_level);
+      const x = records.length === 1 ? 260 : 20 + (index * 480) / (records.length - 1);
+      const y = 140 - Math.max(0, Math.min(level, 2)) * 45;
+      return [Math.round(x), Math.round(y)];
+    });
+
+  if (points.length < 2) {
+    return "";
+  }
+
+  return points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join(" ");
+}
+
+function buildTrendLabels(history) {
+  const records = history.slice(0, 7).reverse();
+  return records.map((item, index) => {
+    if (!item.created_at) {
+      return `#${index + 1}`;
+    }
+    return new Date(item.created_at).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+    });
+  });
+}
+
 function getPasswordStrength(password) {
   let score = 0;
   if (password.length >= 6) score += 35;
@@ -1511,6 +1802,19 @@ function getPasswordStrength(password) {
     return { label: "Weak", value: 35 };
   }
   return { label: "Empty", value: 0 };
+}
+
+function formatUsername(username) {
+  const value = String(username || "").trim();
+  if (!value) {
+    return "Student";
+  }
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function getUserInitial(username) {
+  const value = String(username || "").trim();
+  return value ? value.charAt(0).toUpperCase() : "A";
 }
 
 function statusLabel(status, health) {

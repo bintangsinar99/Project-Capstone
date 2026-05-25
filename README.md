@@ -5,7 +5,7 @@ Aplikasi web deteksi tingkat stres mahasiswa. Project ini sudah menggabungkan:
 - Front-End: React + Vite, berjalan dengan Node.js
 - Back-End: FastAPI
 - Model AI/ML: Keras/TensorFlow MLP ensemble untuk klasifikasi stres mahasiswa
-- Penyimpanan: riwayat prediksi ke file JSON
+- Penyimpanan: riwayat prediksi ke file JSON, akun user ke PostgreSQL jika `DATABASE_URL` diisi
 
 ## Struktur
 
@@ -104,7 +104,47 @@ $env:GROQ_API_KEY="ISI_API_KEY_GROQ_DI_SINI"
 
 Jika tidak diisi, aplikasi tetap bisa berjalan. Hanya saran AI generatif yang tidak aktif.
 
-### 6. Jalankan aplikasi
+### 6. Hubungkan database PostgreSQL, opsional tapi disarankan untuk hosting
+
+Secara default, akun login/register disimpan ke `backend/data/users.json`. Ini aman untuk uji coba lokal, tetapi tidak cocok untuk hosting karena file lokal bisa hilang saat server restart atau redeploy.
+
+Untuk memakai PostgreSQL atau Supabase:
+
+1. Buat database PostgreSQL. Jika memakai Supabase, buka `Project Settings > Database > Connection string`.
+2. Pilih connection string tipe `Transaction pooler`.
+3. Salin `backend/.env.example` menjadi `backend/.env`.
+4. Isi `DATABASE_URL` di `backend/.env`.
+
+Contoh isi `backend/.env`:
+
+```env
+DATABASE_URL=postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+DATABASE_SSLMODE=require
+```
+
+Atau isi langsung dari PowerShell sebelum menjalankan backend:
+
+```powershell
+$env:DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+$env:DATABASE_SSLMODE="require"
+```
+
+Saat `DATABASE_URL` aktif, backend otomatis membuat tabel `users` jika belum ada.
+
+Catatan admin monitoring, opsional:
+
+Untuk percobaan halaman admin, isi juga `ADMIN_USERNAME` dan `ADMIN_PASSWORD` di `backend/.env`.
+
+```env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+```
+
+Setelah backend dijalankan ulang, login memakai akun admin tersebut akan membuka halaman monitoring khusus admin. User biasa tetap bisa register memakai username bebas, kecuali username yang sama dengan `ADMIN_USERNAME`.
+
+Untuk menonaktifkan admin, kosongkan kembali `ADMIN_PASSWORD`.
+
+### 7. Jalankan aplikasi
 
 Masih dari folder `backend`, jalankan:
 
@@ -120,7 +160,7 @@ http://127.0.0.1:8000
 
 Jika halaman MindTrack muncul, modul sudah berhasil dijalankan.
 
-### 7. Cara mematikan aplikasi
+### 8. Cara mematikan aplikasi
 
 Klik terminal yang menjalankan `uvicorn`, lalu tekan:
 
@@ -218,6 +258,15 @@ Pada platform seperti Render/Railway, port biasanya dari environment variable:
 cd backend
 python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
+
+Untuk hosting dengan database, tambahkan environment variable berikut di dashboard hosting:
+
+```text
+DATABASE_URL=connection-string-postgresql
+DATABASE_SSLMODE=require
+```
+
+Jika memakai Supabase, gunakan connection string dari `Transaction pooler`. Jangan menaruh password database langsung di source code.
 
 ## Endpoint RESTful
 

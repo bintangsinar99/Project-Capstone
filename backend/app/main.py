@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -42,6 +42,19 @@ class AuthPayload(BaseModel):
 class AuthResponse(BaseModel):
     username: str
     token: str
+    role: str = "user"
+
+
+class AdminOverviewResponse(BaseModel):
+    api_status: str
+    auth_store: str
+    model_loaded: bool
+    model_available: bool
+    model_mode: str | None = None
+    n_models: int
+    user_count: int
+    prediction_count: int
+    recent_predictions: list[dict]
 
 
 # ── Auth endpoints ──────────────────────────────────────────────────────────
@@ -78,6 +91,29 @@ def login(payload: AuthPayload):
     return result
 
 
+@app.get("/api/admin/overview", response_model=AdminOverviewResponse)
+def admin_overview(
+    username: str | None = Header(default=None, alias="X-MindTrack-Username"),
+    token: str | None = Header(default=None, alias="X-MindTrack-Token"),
+    role: str | None = Header(default=None, alias="X-MindTrack-Role"),
+):
+    if not user_store.is_admin_session(username, token, role):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    status_data = model_status()
+    return AdminOverviewResponse(
+        api_status="online",
+        auth_store=user_store.mode,
+        model_loaded=status_data["loaded"],
+        model_available=status_data["available"],
+        model_mode=status_data["mode"],
+        n_models=status_data["n_models"],
+        user_count=user_store.count_users(),
+        prediction_count=history_store.count_all(),
+        recent_predictions=history_store.recent_raw(5),
+    )
+
+
 # ── Health ──────────────────────────────────────────────────────────────────
 
 @app.get("/api/health", response_model=HealthResponse)
@@ -102,7 +138,10 @@ def health_check():
     response_model=PredictionResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def create_prediction(payload: StudentData):
+def create_prediction(
+    payload: StudentData,
+    username: str | None = Header(default=None, alias="X-MindTrack-Username"),
+):
     try:
         prediction = predict_stress(payload)
     except RuntimeError as exc:
@@ -110,25 +149,31 @@ def create_prediction(payload: StudentData):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-    return history_store.add(prediction)
+    return history_store.add(prediction, username=username)
 
 
 @app.get("/api/predictions", response_model=list[PredictionResponse])
-def list_predictions():
-    return history_store.all()
+def list_predictions(username: str | None = Header(default=None, alias="X-MindTrack-Username")):
+    return history_store.all(username=username)
 
 
 @app.get("/api/predictions/{prediction_id}", response_model=PredictionResponse)
-def get_prediction(prediction_id: str):
-    prediction = history_store.get(prediction_id)
+def get_prediction(
+    prediction_id: str,
+    username: str | None = Header(default=None, alias="X-MindTrack-Username"),
+):
+    prediction = history_store.get(prediction_id, username=username)
     if prediction is None:
         raise HTTPException(status_code=404, detail="Prediction not found")
     return prediction
 
 
 @app.delete("/api/predictions/{prediction_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_prediction(prediction_id: str):
-    deleted = history_store.delete(prediction_id)
+def delete_prediction(
+    prediction_id: str,
+    username: str | None = Header(default=None, alias="X-MindTrack-Username"),
+):
+    deleted = history_store.delete(prediction_id, username=username)
     if not deleted:
         raise HTTPException(status_code=404, detail="Prediction not found")
     return None
