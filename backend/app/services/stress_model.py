@@ -26,7 +26,7 @@ def _load_local_env() -> None:
             key, value = line.split("=", 1)
             key = key.strip()
             value = value.strip().strip('"').strip("'")
-            if key and value and not os.environ.get(key):
+            if key and value:
                 os.environ[key] = value
 
 
@@ -36,7 +36,12 @@ MODEL_PATH = Path(os.getenv("MODEL_PATH", MODEL_DIR / "stress_mlp_final.keras"))
 ENSEMBLE_META_PATH = Path(os.getenv("ENSEMBLE_META_PATH", MODEL_DIR / "ensemble_meta.json"))
 SCALER_PATH = Path(os.getenv("SCALER_PATH", MODEL_DIR / "scaler_params.json"))
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+GROQ_FALLBACK_MODELS = [
+    GROQ_MODEL,
+    "llama-3.1-8b-instant",
+    "llama-3.3-70b-versatile",
+]
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 CLASS_NAMES = ["Rendah", "Sedang", "Tinggi"]
@@ -192,24 +197,50 @@ def get_ai_advice(stress_class: str, confidence: float, data: dict) -> str:
             f"dukungan sosial {data['social_support']}/3. "
             "Berikan saran empatik, personal, dan actionable dalam 3 kalimat bahasa Indonesia."
         )
-        response = requests.post(
-            GROQ_URL,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": GROQ_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.7,
-                "max_tokens": 260,
-            },
-            timeout=15,
-        )
-        response.raise_for_status()
-        return response.json()["choices"][0]["message"]["content"]
+        model_candidates = _groq_model_candidates()
+        last_error = None
+        for model_name in model_candidates:
+            response = requests.post(
+                GROQ_URL,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": model_name,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.7,
+                    "max_tokens": 260,
+                },
+                timeout=15,
+            )
+            if response.ok:
+                return response.json()["choices"][0]["message"]["content"]
+
+            last_error = _groq_error_message(response)
+            if response.status_code not in {400, 403, 404}:
+                break
+
+        return f"Saran AI generatif tidak tersedia: {last_error or 'Groq API request failed.'}"
     except Exception as exc:
         return f"Saran AI generatif tidak tersedia: {exc}"
+
+
+def _groq_model_candidates() -> list[str]:
+    candidates = [os.getenv("GROQ_MODEL", GROQ_MODEL).strip(), *GROQ_FALLBACK_MODELS]
+    unique = []
+    for candidate in candidates:
+        if candidate and candidate not in unique:
+            unique.append(candidate)
+    return unique
+
+
+def _groq_error_message(response) -> str:
+    try:
+        payload = response.json()
+    except ValueError:
+        payload = response.text
+    return f"{response.status_code} {response.reason}: {payload}"
 
 
 def is_model_available() -> bool:

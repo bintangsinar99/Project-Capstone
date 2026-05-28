@@ -74,41 +74,41 @@ const initialForm = {
 
 const fieldGroups = [
   {
-    title: "Psychological Indicators",
+    title: "Indikator Psikologis",
     fields: [
-      ["anxiety_level", "Anxiety Level", 0, 21, 1],
-      ["self_esteem", "Self Esteem", 0, 30, 1],
-      ["depression", "Depression", 0, 27, 1],
-      ["mental_health_history", "Mental Health History", 0, 1, 1],
-      ["social_support", "Social Support", 0, 3, 1],
-      ["peer_pressure", "Peer Pressure", 0, 5, 1],
-      ["bullying", "Bullying Experience", 0, 5, 1],
+      ["anxiety_level", "Tingkat Kecemasan", 0, 21, 1],
+      ["self_esteem", "Kepercayaan Diri", 0, 30, 1],
+      ["depression", "Indikator Depresi", 0, 27, 1],
+      ["mental_health_history", "Riwayat Kesehatan Mental", 0, 1, 1],
+      ["social_support", "Dukungan Sosial", 0, 3, 1],
+      ["peer_pressure", "Tekanan Teman Sebaya", 0, 5, 1],
+      ["bullying", "Pengalaman Bullying", 0, 5, 1],
     ],
   },
   {
-    title: "Academic & Daily Wellness",
+    title: "Akademik & Wellness Harian",
     fields: [
-      ["headache", "Headache Intensity", 0, 5, 1],
-      ["sleep_quality", "Sleep Quality", 0, 5, 1],
-      ["academic_performance", "Academic Performance", 0, 5, 1],
-      ["study_load", "Study Load", 0, 5, 1],
-      ["future_career_concerns", "Career Concerns", 0, 5, 1],
-      ["Age", "Age", 17, 60, 1],
-      ["study_stress_ratio", "Study Stress Ratio", 0, 10, 0.1],
-      ["mental_risk_score", "Mental Risk Score", 0, 80, 1],
+      ["headache", "Intensitas Sakit Kepala", 0, 5, 1],
+      ["sleep_quality", "Kualitas Tidur", 0, 5, 1],
+      ["academic_performance", "Performa Akademik", 0, 5, 1],
+      ["study_load", "Beban Belajar", 0, 5, 1],
+      ["future_career_concerns", "Kekhawatiran Karier", 0, 5, 1],
+      ["Age", "Usia", 17, 60, 1],
+      ["study_stress_ratio", "Rasio Stres Belajar", 0, 10, 0.1],
+      ["mental_risk_score", "Skor Risiko Mental", 0, 80, 1],
     ],
   },
   {
-    title: "Digital Activity",
+    title: "Aktivitas Digital",
     fields: [
-      ["Total_App_Usage_Hours", "Total App Usage", 0, 24, 0.1],
-      ["Daily_Screen_Time_Hours", "Daily Screen Time", 0, 24, 0.1],
-      ["Number_of_Apps_Used", "Apps Used", 0, 80, 1],
-      ["Social_Media_Usage_Hours", "Social Media Usage", 0, 24, 0.1],
-      ["Productivity_App_Usage_Hours", "Productivity Apps", 0, 24, 0.1],
-      ["Gaming_App_Usage_Hours", "Gaming Apps", 0, 24, 0.1],
-      ["digital_overload_score", "Digital Overload", 0, 40, 0.1],
-      ["productivity_balance_score", "Productivity Balance", 0, 5, 0.01],
+      ["Total_App_Usage_Hours", "Total Penggunaan Aplikasi", 0, 24, 0.1],
+      ["Daily_Screen_Time_Hours", "Screen Time Harian", 0, 24, 0.1],
+      ["Number_of_Apps_Used", "Jumlah Aplikasi Dipakai", 0, 80, 1],
+      ["Social_Media_Usage_Hours", "Penggunaan Media Sosial", 0, 24, 0.1],
+      ["Productivity_App_Usage_Hours", "Aplikasi Produktivitas", 0, 24, 0.1],
+      ["Gaming_App_Usage_Hours", "Aplikasi Gim", 0, 24, 0.1],
+      ["digital_overload_score", "Beban Digital", 0, 40, 0.1],
+      ["productivity_balance_score", "Keseimbangan Produktivitas", 0, 5, 0.01],
     ],
   },
 ];
@@ -503,7 +503,7 @@ function App() {
             <label className="search-box">
               <Search size={20} />
               <input
-                placeholder="Search insights..."
+                placeholder="Cari laporan, artikel, atau histori..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
               />
@@ -1147,66 +1147,94 @@ function RegisterPage({
 function DashboardView({ latestResult, history, username, setActiveView, startSession }) {
   const hasAssessment = Boolean(latestResult);
   const latestInput = history[0]?.student_data;
-  const stressClass = latestResult?.stress_class || "No Data";
+  const stressClass = latestResult?.stress_class || "Belum ada";
   const confidence = latestResult ? Math.round(latestResult.confidence * 100) : 0;
   const displayName = formatUsername(username);
-  const sleepQuality = latestInput?.sleep_quality;
   const screenTime = latestInput?.Daily_Screen_Time_Hours;
   const studyLoad = latestInput?.study_load;
-  const mentalRisk = latestInput?.mental_risk_score;
-  const digitalOverload = latestInput?.digital_overload_score;
+  const totalUsage = latestInput?.Total_App_Usage_Hours;
+  const activeMinutes = hasAssessment ? Math.max(20, Math.round((Number(studyLoad) || 2) * 14)) : 0;
+  const digitalUsage = hasAssessment ? formatDurationHours(totalUsage || screenTime || 0) : "--";
+  const heartRate = hasAssessment ? estimateHeartRate(latestResult?.stress_level, latestInput) : "--";
 
   return (
-    <div className="view-stack">
-      <section className="hero-dashboard">
-        <h2>Welcome back, {displayName}!</h2>
-        <p>{hasAssessment ? "Ready for your daily check-in? Your focus is currently improving." : "Start your first assessment to personalize this dashboard."}</p>
-      </section>
-
-      <section className="metric-grid">
-        <article className={`metric-card ring-card ${hasAssessment ? "" : "empty-metric"}`}>
-          <div className="stress-ring" style={{ "--progress": `${confidence}%` }}>
-            <strong>{hasAssessment ? `${confidence}%` : "--"}</strong>
-            <span>Index</span>
+    <div className="view-stack dashboard-modern">
+      <section className="dashboard-hero-modern">
+        <article className="hero-dashboard">
+          <div>
+            <h2>Selamat pagi, {displayName}!</h2>
+            <p>
+              {hasAssessment
+                ? "Berikut ringkasan kondisi terbaru berdasarkan assessment dan pola aktivitas digitalmu."
+                : "Mulai assessment pertama untuk membuat ringkasan dashboard yang personal."}
+            </p>
           </div>
-          <p>Stress Level</p>
-          <h3 className="stress-class-label">{stressClass}</h3>
+          <div className="hero-summary-grid">
+            <div>
+              <span>Screen Time</span>
+              <strong>{hasAssessment ? formatHours(screenTime) : "--"}</strong>
+            </div>
+            <div>
+              <span>Study Load</span>
+              <strong>{hasAssessment ? `${studyLoad}/5` : "--"}</strong>
+            </div>
+            <div>
+              <span>Status</span>
+              <strong>{hasAssessment ? stressClass : "Pending"}</strong>
+            </div>
+          </div>
         </article>
 
-        <article className={`metric-card ${hasAssessment ? "" : "empty-metric"}`}>
-          <Moon className="metric-icon" size={34} />
-          <span className="status-pill">{hasAssessment ? sleepQualityLabel(sleepQuality) : "Pending"}</span>
-          <p>Sleep Quality</p>
-          <h3>{hasAssessment ? `${sleepQuality}/5` : "--"}</h3>
-          <small>{hasAssessment ? sleepQualityHint(sleepQuality) : "Complete an assessment first"}</small>
-        </article>
-
-        <article className={`metric-card ${hasAssessment ? "" : "empty-metric"}`}>
-          <BarChart3 className="metric-icon" size={34} />
-          <span className="trend">{hasAssessment ? screenTimeLabel(screenTime) : "--"}</span>
-          <p>Screen Time</p>
-          <h3>{hasAssessment ? formatHours(screenTime) : "--"}</h3>
-          <small>{hasAssessment ? screenTimeHint(screenTime) : "Waiting for input data"}</small>
+        <article className="mood-card">
+          <div>
+            <Moon size={30} />
+            <span>{hasAssessment ? "Terupdate" : "Menunggu"}</span>
+          </div>
+          <p>Mood Hari Ini</p>
+          <h3>{hasAssessment ? dashboardMoodLabel(latestResult?.stress_level) : "Belum Dinilai"}</h3>
+          <div className="mood-options" aria-label="Mood selector preview">
+            {["Tenang", "Fokus", "Lelah", "Cemas"].map((label, index) => (
+              <span className={index === 0 && hasAssessment ? "active" : ""} key={label}>
+                {label.charAt(0)}
+              </span>
+            ))}
+          </div>
         </article>
       </section>
 
-      <section className="dashboard-grid">
+      <section className="stats-row">
+        <DashboardStat
+          icon={Activity}
+          label="Skor Stres"
+          value={hasAssessment ? `${stressClass} (${confidence})` : "--"}
+          trend={hasAssessment ? "Live" : "Wait"}
+          tone="orange"
+        />
+        <DashboardStat
+          icon={TimerReset}
+          label="Menit Aktif"
+          value={hasAssessment ? `${activeMinutes} Menit` : "--"}
+          trend={hasAssessment ? "+8%" : "Wait"}
+          tone="blue"
+        />
+        <DashboardStat
+          icon={Heart}
+          label="Detak Jantung"
+          value={hasAssessment ? `${heartRate} BPM` : "--"}
+          trend={hasAssessment ? "Normal" : "Wait"}
+          tone="rose"
+        />
+        <DashboardStat
+          icon={Laptop}
+          label="Penggunaan Digital"
+          value={digitalUsage}
+          trend={hasAssessment ? screenTimeLabel(screenTime) : "Wait"}
+          tone="purple"
+        />
+      </section>
+
+      <section className="dashboard-two-column">
         <AiRecommendation latestResult={latestResult} hasAssessment={hasAssessment} startSession={startSession} />
-        <article className={`small-stat ${hasAssessment ? "" : "empty-metric"}`}>
-          <BookOpen size={26} />
-          <strong>{hasAssessment ? `${studyLoad}/5` : "--"}</strong>
-          <span>Study Load</span>
-        </article>
-        <article className={`small-stat ${hasAssessment ? "" : "empty-metric"}`}>
-          <Brain size={28} />
-          <strong>{hasAssessment ? mentalRisk : "--"}</strong>
-          <span>Mental Risk</span>
-        </article>
-        <article className={`small-stat ${hasAssessment ? "" : "empty-metric"}`}>
-          <BarChart3 size={26} />
-          <strong>{hasAssessment ? Math.round(digitalOverload) : "--"}</strong>
-          <span>Digital Overload</span>
-        </article>
         <StressTrend history={history} hasAssessment={hasAssessment} />
       </section>
 
@@ -1216,24 +1244,52 @@ function DashboardView({ latestResult, history, username, setActiveView, startSe
   );
 }
 
-function PredictionForm({ form, setForm, updateField, handleSubmit, isLoading }) {
+function DashboardStat({ icon: Icon, label, value, trend, tone }) {
   return (
-    <form className="prediction-layout" onSubmit={handleSubmit}>
+    <article className={`dashboard-stat ${tone}`}>
+      <div>
+        <span className="stat-icon">
+          <Icon size={22} />
+        </span>
+        <small>{trend}</small>
+      </div>
+      <p>{label}</p>
+      <strong>{value}</strong>
+    </article>
+  );
+}
+
+function PredictionForm({ form, setForm, updateField, handleSubmit, isLoading }) {
+  const allFields = fieldGroups.flatMap((group) => group.fields);
+  const completedFields = allFields.filter(([name]) => form[name] !== "" && form[name] !== null && form[name] !== undefined);
+  const progress = Math.round((completedFields.length / allFields.length) * 100);
+
+  return (
+    <form className="prediction-layout assessment-form-shell" onSubmit={handleSubmit}>
       <section className="assessment-card">
-        <div className="section-heading">
-          <span>Latest analysis</span>
-          <h2>Prediction Form</h2>
-          <p>Fill in your self-reported indicators and digital activity pattern.</p>
+        <div className="assessment-progress">
+          <div>
+            <h2>Form Assessment</h2>
+            <p>Isi indikator psikologis, akademik, dan aktivitas digital.</p>
+          </div>
+          <strong>{progress}% selesai</strong>
+          <span className="progress-track" aria-label={`Assessment progress ${progress}%`}>
+            <span style={{ width: `${progress}%` }} />
+          </span>
         </div>
 
         <div className="quick-actions">
+          <span>Quick sample</span>
           <button type="button" className="ghost-button" onClick={() => setForm(demoCases.low)}>
-            Low sample
+            <CheckCircle2 size={14} />
+            Stres Rendah
           </button>
           <button type="button" className="ghost-button" onClick={() => setForm(demoCases.high)}>
-            High sample
+            <Zap size={14} />
+            Stres Tinggi
           </button>
           <button type="button" className="ghost-button" onClick={() => setForm(initialForm)}>
+            <X size={14} />
             Reset
           </button>
         </div>
@@ -1249,11 +1305,12 @@ function PredictionForm({ form, setForm, updateField, handleSubmit, isLoading })
                     <strong>{form[name]}</strong>
                   </span>
                   <input
-                    type="number"
+                    type="range"
                     min={min}
                     max={max}
                     step={step}
                     value={form[name]}
+                    aria-label={label}
                     onChange={(event) => updateField(name, event.target.value, step)}
                   />
                 </label>
@@ -1262,10 +1319,29 @@ function PredictionForm({ form, setForm, updateField, handleSubmit, isLoading })
           </fieldset>
         ))}
 
-        <button className="primary-button" type="submit" disabled={isLoading}>
-          <Send size={18} />
-          {isLoading ? "Processing..." : "Predict Stress"}
-        </button>
+        <div className="assessment-submit-row">
+          <button className="primary-button" type="submit" disabled={isLoading}>
+            {isLoading ? "Memproses..." : "Prediksi Stres"}
+            <Send size={18} />
+          </button>
+        </div>
+      </section>
+
+      <section className="assessment-help-grid">
+        <article>
+          <ShieldCheck size={22} />
+          <div>
+            <strong>Privasi Data</strong>
+            <span>Data assessment digunakan untuk prediksi dan riwayat akunmu, bukan diagnosis medis.</span>
+          </div>
+        </article>
+        <article>
+          <BookOpen size={22} />
+          <div>
+            <strong>Tips Pengisian</strong>
+            <span>Gunakan kondisi terbaru agar rekomendasi AI lebih sesuai dengan aktivitas harianmu.</span>
+          </div>
+        </article>
       </section>
     </form>
   );
@@ -1483,8 +1559,8 @@ function StressTrend({ history, hasAssessment = true }) {
   return (
     <article className={`trend-card ${hasAssessment ? "" : "empty-metric"}`}>
       <div>
-        <h2>Stress Trend</h2>
-        <span>{hasAssessment ? `${Math.min(history.length, 7)} Records` : "No Data"}</span>
+        <h2>Tren Stres</h2>
+        <span>{hasAssessment ? `${Math.min(history.length, 7)} Catatan` : "Belum Ada Data"}</span>
       </div>
       {trendPath ? (
         <>
@@ -1520,9 +1596,9 @@ function HistoryTable({ history, setActiveView }) {
   return (
     <section className="history-table">
       <div className="table-title">
-        <h2>Recent History</h2>
+        <h2>Riwayat Terbaru</h2>
         <button className="text-button" type="button" onClick={() => setActiveView("history")}>
-          View All
+          Lihat Semua
         </button>
       </div>
 
@@ -1532,23 +1608,23 @@ function HistoryTable({ history, setActiveView }) {
           <strong>Belum ada riwayat prediksi</strong>
           <span>Mulai assessment pertama untuk membuat hasil khusus akun ini.</span>
           <button className="text-button" type="button" onClick={() => setActiveView("prediction")}>
-            Start Assessment
+            Mulai Assessment
           </button>
         </div>
       ) : (
         <>
           <div className="table-grid header">
-            <span>Date</span>
-            <span>Stress Level</span>
-            <span>Action Taken</span>
-            <span>Sentiment</span>
+            <span>Tanggal</span>
+            <span>Tingkat Stres</span>
+            <span>Aksi</span>
+            <span>Sentimen</span>
           </div>
           {rows.map((item) => (
             <div className="table-grid" key={item.id}>
               <span>{item.created_at ? new Date(item.created_at).toLocaleDateString("id-ID") : item.date}</span>
               <span>{item.result?.stress_class || item.level}</span>
-              <span>{item.action || "Guided Meditation"}</span>
-              <span className="sentiment">{item.sentiment || "Positive"}</span>
+              <span>{item.action || "Meditasi Terpandu"}</span>
+              <span className="sentiment">{item.sentiment || "Positif"}</span>
             </div>
           ))}
         </>
@@ -1729,28 +1805,57 @@ function formatHours(value) {
   return `${hours.toFixed(1)}h`;
 }
 
+function formatDurationHours(value) {
+  const totalHours = Number(value);
+  if (!Number.isFinite(totalHours)) {
+    return "--";
+  }
+  const hours = Math.floor(totalHours);
+  const minutes = Math.round((totalHours - hours) * 60);
+  if (hours <= 0) {
+    return `${minutes}m`;
+  }
+  return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+}
+
+function estimateHeartRate(stressLevel, input) {
+  const anxiety = Number(input?.anxiety_level) || 0;
+  const level = Number(stressLevel) || 0;
+  return Math.min(104, Math.max(64, 68 + level * 8 + Math.round(anxiety / 6)));
+}
+
+function dashboardMoodLabel(stressLevel) {
+  if (Number(stressLevel) >= 2) {
+    return "Butuh Rehat";
+  }
+  if (Number(stressLevel) === 1) {
+    return "Stabil & Waspada";
+  }
+  return "Tenang & Fokus";
+}
+
 function sleepQualityLabel(value) {
-  if (value >= 4) return "Good";
-  if (value >= 3) return "Fair";
-  return "Needs care";
+  if (value >= 4) return "Baik";
+  if (value >= 3) return "Cukup";
+  return "Perlu Rehat";
 }
 
 function sleepQualityHint(value) {
-  if (value >= 4) return "Sleep support is stable";
-  if (value >= 3) return "Keep a consistent sleep routine";
-  return "Prioritize rest and bedtime consistency";
+  if (value >= 4) return "Kualitas tidur cukup stabil";
+  if (value >= 3) return "Jaga rutinitas tidur tetap konsisten";
+  return "Prioritaskan istirahat dan jam tidur";
 }
 
 function screenTimeLabel(value) {
-  if (value <= 5) return "Balanced";
-  if (value <= 8) return "Moderate";
-  return "High";
+  if (value <= 5) return "Seimbang";
+  if (value <= 8) return "Sedang";
+  return "Tinggi";
 }
 
 function screenTimeHint(value) {
-  if (value <= 5) return "Digital load looks manageable";
-  if (value <= 8) return "Consider planned screen breaks";
-  return "High usage may increase fatigue";
+  if (value <= 5) return "Beban digital masih terkendali";
+  if (value <= 8) return "Coba jeda layar terjadwal";
+  return "Penggunaan tinggi bisa menambah lelah";
 }
 
 function buildTrendPath(history) {

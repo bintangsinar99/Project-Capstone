@@ -10,14 +10,14 @@
     "ensemble_model_8.keras"
   ],
   "ensemble_weights": [
-    0.11638173334770434,
-    0.11638173334770434,
-    0.10346449818613628,
-    0.10346449818613628,
-    0.14725557706252831,
-    0.16563999829991816,
-    0.16563999829991816,
-    0.08177196326995403
+    0.12633546698921966,
+    0.14210807464648983,
+    0.09984776756709018,
+    0.09984776756709018,
+    0.09984776756709018,
+    0.15984984550265335,
+    0.15984984550265335,
+    0.11231346465771323
   ],
   "temperature": 0.95,
   "features": [
@@ -40,13 +40,8 @@
     "Social_Media_Usage_Hours",
     "Productivity_App_Usage_Hours",
     "Gaming_App_Usage_Hours",
-    "digital_overload_score",
-    "productivity_balance_score",
-    "study_stress_ratio",
-    "mental_risk_score",
     "screen_to_sleep_ratio",
     "social_vs_productivity",
-    "mental_digital_composite",
     "anxiety_depression_sum",
     "support_pressure_diff",
     "passive_screen_ratio",

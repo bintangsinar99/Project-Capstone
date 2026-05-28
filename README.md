@@ -16,6 +16,7 @@ backend/models/            Model, ensemble metadata, dan scaler
 backend/data/              Riwayat prediksi, dataset referensi, data dictionary
 docs/                      Laporan teknis dan daftar fitur
 notebooks/                 Notebook final Data Science
+dashboard/                 Dashboard Streamlit opsional dari tim Data Science
 ```
 
 ## Pembaruan Aset Terbaru
@@ -23,15 +24,16 @@ notebooks/                 Notebook final Data Science
 Aset model dan dokumen Data Science terakhir disinkronkan dari:
 
 ```text
-F:\Program\Projek Gabut\capstone project-20260518T120508Z-3-001
+F:\capstone project-20260528T111144Z-3-001\capstone project\deteksi stress mahasiswa
 ```
 
 Bagian yang diperbarui ke project ini:
 
-- `backend/models`: model ensemble `.keras`, `stress_mlp_final`, `ensemble_meta.json`, dan `scaler_params.json`
+- `backend/models`: model ensemble `.keras`, `ensemble_meta.json`, dan `scaler_params.json`
 - `backend/data`: dataset bersih dan data dictionary
 - `docs`: visualisasi training/evaluasi, selected features, dan laporan teknis
 - `notebooks`: notebook final Data Science dan notebook training model
+- `dashboard`: dashboard Streamlit opsional dari tim Data Science
 
 ## Tutorial Membuka Modul Untuk User Baru
 
@@ -278,7 +280,7 @@ Jika memakai Supabase, gunakan connection string dari `Transaction pooler`. Jang
 
 ## Input Model
 
-Model menerima 23 fitur utama. Jika `backend/models/ensemble_meta.json` tersedia, backend otomatis memakai ensemble; jika tidak, backend fallback ke `stress_mlp_final.keras`.
+Model memakai daftar fitur dari `backend/models/ensemble_meta.json`. Pada aset terbaru, ensemble memakai 26 fitur setelah fitur turunan dihitung oleh backend. Jika `ensemble_meta.json` tersedia, backend otomatis memakai ensemble; jika tidak, backend fallback ke `stress_mlp_final.keras`.
 
 Fitur utama yang dikirim dari UI:
 
@@ -296,6 +298,16 @@ Fitur utama yang dikirim dari UI:
 - `mental_risk_score`
 
 Back-end otomatis menambahkan fitur turunan sebelum inference sesuai scaler model.
+
+## Dashboard Streamlit Opsional
+
+Dashboard eksplorasi dari tim Data Science tersedia di folder `dashboard`.
+
+```bash
+cd dashboard
+python -m pip install -r requirements.txt
+streamlit run app.py
+```
 
 ## Output Model
 

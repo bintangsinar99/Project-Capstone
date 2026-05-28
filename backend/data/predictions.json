@@ -1,5 +1,173 @@
 [
   {
+    "id": "f824caeb-1c57-4fc9-ad50-d6b512315abe",
+    "created_at": "2026-05-28T11:11:24.199737+00:00",
+    "username": "bintang",
+    "student_data": {
+      "anxiety_level": 5,
+      "self_esteem": 26,
+      "mental_health_history": 0,
+      "depression": 4,
+      "headache": 2,
+      "sleep_quality": 5,
+      "academic_performance": 3,
+      "study_load": 1,
+      "future_career_concerns": 1,
+      "social_support": 3,
+      "peer_pressure": 1,
+      "bullying": 0,
+      "Age": 22,
+      "Total_App_Usage_Hours": 6.0,
+      "Daily_Screen_Time_Hours": 4.0,
+      "Number_of_Apps_Used": 16,
+      "Social_Media_Usage_Hours": 1.0,
+      "Productivity_App_Usage_Hours": 2.0,
+      "Gaming_App_Usage_Hours": 0.5,
+      "digital_overload_score": 6.0,
+      "productivity_balance_score": 0.5,
+      "study_stress_ratio": 1.0,
+      "mental_risk_score": 10
+    },
+    "result": {
+      "stress_level": 0,
+      "stress_class": "Rendah",
+      "confidence": 0.9818,
+      "probabilities": {
+        "rendah": 0.9818,
+        "sedang": 0.0095,
+        "tinggi": 0.0087
+      },
+      "recommendation": "Pola digital dan indikator psikologis terpantau rendah risiko. Pertahankan ritme tidur dan penggunaan aplikasi yang sehat.",
+      "ai_advice": "Selamat kamu! Hasil analisis menunjukkan bahwa kamu memiliki tingkat stres yang rendah. Namun, saya ingin memberimu beberapa saran untuk meningkatkan keseimbangan hidupmu. \n\nTeruslah menjaga kualitas tidur yang baik dengan memastikan kamu tidur setidaknya 7-8 jam setiap malam. Selain itu, cobalah untuk mengurangi screen time menjadi 2-3 jam sehari dan mengalihkannya dengan kegiatan lain yang lebih produktif atau relaksasi, seperti membaca, berolahraga, atau meditasi."
+    }
+  },
+  {
+    "id": "fb4cf3fb-0034-46c0-a794-544ec618b86f",
+    "created_at": "2026-05-26T13:14:03.121519+00:00",
+    "username": "bintang",
+    "student_data": {
+      "anxiety_level": 5,
+      "self_esteem": 26,
+      "mental_health_history": 0,
+      "depression": 4,
+      "headache": 2,
+      "sleep_quality": 5,
+      "academic_performance": 3,
+      "study_load": 1,
+      "future_career_concerns": 1,
+      "social_support": 3,
+      "peer_pressure": 1,
+      "bullying": 0,
+      "Age": 22,
+      "Total_App_Usage_Hours": 6.0,
+      "Daily_Screen_Time_Hours": 4.0,
+      "Number_of_Apps_Used": 16,
+      "Social_Media_Usage_Hours": 1.0,
+      "Productivity_App_Usage_Hours": 2.0,
+      "Gaming_App_Usage_Hours": 0.5,
+      "digital_overload_score": 6.0,
+      "productivity_balance_score": 0.5,
+      "study_stress_ratio": 1.0,
+      "mental_risk_score": 10
+    },
+    "result": {
+      "stress_level": 0,
+      "stress_class": "Rendah",
+      "confidence": 0.9818,
+      "probabilities": {
+        "rendah": 0.9818,
+        "sedang": 0.0095,
+        "tinggi": 0.0087
+      },
+      "recommendation": "Pola digital dan indikator psikologis terpantau rendah risiko. Pertahankan ritme tidur dan penggunaan aplikasi yang sehat.",
+      "ai_advice": "Saran AI generatif tidak tersedia: 403 Client Error: Forbidden for url: https://api.groq.com/openai/v1/chat/completions"
+    }
+  },
+  {
+    "id": "8a543fc2-f344-4d0d-a583-f647c472c35f",
+    "created_at": "2026-05-26T13:13:49.897529+00:00",
+    "username": "bintang",
+    "student_data": {
+      "anxiety_level": 18,
+      "self_esteem": 5,
+      "mental_health_history": 1,
+      "depression": 20,
+      "headache": 4,
+      "sleep_quality": 1,
+      "academic_performance": 1,
+      "study_load": 5,
+      "future_career_concerns": 5,
+      "social_support": 1,
+      "peer_pressure": 5,
+      "bullying": 4,
+      "Age": 22,
+      "Total_App_Usage_Hours": 6.0,
+      "Daily_Screen_Time_Hours": 12.0,
+      "Number_of_Apps_Used": 16,
+      "Social_Media_Usage_Hours": 4.5,
+      "Productivity_App_Usage_Hours": 0.5,
+      "Gaming_App_Usage_Hours": 4.0,
+      "digital_overload_score": 20.0,
+      "productivity_balance_score": 0.05,
+      "study_stress_ratio": 4.5,
+      "mental_risk_score": 50
+    },
+    "result": {
+      "stress_level": 2,
+      "stress_class": "Tinggi",
+      "confidence": 0.927,
+      "probabilities": {
+        "rendah": 0.0468,
+        "sedang": 0.0262,
+        "tinggi": 0.927
+      },
+      "recommendation": "Indikasi stres tinggi terdeteksi. Evaluasi jadwal digital, kualitas tidur, dan pertimbangkan berbicara dengan dosen wali atau konselor kampus.",
+      "ai_advice": "Saran AI generatif tidak tersedia: 403 Client Error: Forbidden for url: https://api.groq.com/openai/v1/chat/completions"
+    }
+  },
+  {
+    "id": "e6255afb-d093-4b54-ba3e-7a849babcbfe",
+    "created_at": "2026-05-26T13:13:49.873111+00:00",
+    "username": "bintang",
+    "student_data": {
+      "anxiety_level": 18,
+      "self_esteem": 5,
+      "mental_health_history": 1,
+      "depression": 20,
+      "headache": 4,
+      "sleep_quality": 1,
+      "academic_performance": 1,
+      "study_load": 5,
+      "future_career_concerns": 5,
+      "social_support": 1,
+      "peer_pressure": 5,
+      "bullying": 4,
+      "Age": 22,
+      "Total_App_Usage_Hours": 6.0,
+      "Daily_Screen_Time_Hours": 12.0,
+      "Number_of_Apps_Used": 16,
+      "Social_Media_Usage_Hours": 4.5,
+      "Productivity_App_Usage_Hours": 0.5,
+      "Gaming_App_Usage_Hours": 4.0,
+      "digital_overload_score": 20.0,
+      "productivity_balance_score": 0.05,
+      "study_stress_ratio": 4.5,
+      "mental_risk_score": 50
+    },
+    "result": {
+      "stress_level": 2,
+      "stress_class": "Tinggi",
+      "confidence": 0.927,
+      "probabilities": {
+        "rendah": 0.0468,
+        "sedang": 0.0262,
+        "tinggi": 0.927
+      },
+      "recommendation": "Indikasi stres tinggi terdeteksi. Evaluasi jadwal digital, kualitas tidur, dan pertimbangkan berbicara dengan dosen wali atau konselor kampus.",
+      "ai_advice": "Saran AI generatif tidak tersedia: 403 Client Error: Forbidden for url: https://api.groq.com/openai/v1/chat/completions"
+    }
+  },
+  {
     "id": "d8f07581-e6bf-4154-80d1-b19930272e01",
     "created_at": "2026-05-25T14:08:23.429604+00:00",
     "username": "bintang",
