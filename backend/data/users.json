@@ -3,5 +3,15 @@
     "username": "bintang",
     "password_hash": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
     "token": "1b8a8a59-4e5c-4ae6-b369-8447704974d5"
+  },
+  {
+    "id": "50e1506b-3851-47ab-9d85-6841f2a48487",
+    "username": "JOHN",
+    "password_hash": "pbkdf2_sha256$260000$oE7cbec6+3RdDEyg8ohyUg==$Z/znrw/2PK4pSbTyBDAPkl7mAD64y9ctQ9On4BkM1xA=",
+    "role": "user",
+    "token": "2b457d65-abea-439e-a3d4-404bf1b7beb7",
+    "created_at": "2026-05-30T12:51:49.486377+00:00",
+    "updated_at": "2026-05-30T12:51:49.486377+00:00",
+    "last_login_at": null
   }
 ]
