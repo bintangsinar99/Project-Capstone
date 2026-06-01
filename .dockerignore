@@ -1,0 +1,13 @@
+.git
+.vscode
+**/.env
+**/.venv
+**/__pycache__
+**/*.pyc
+frontend
+dashboard
+docs
+notebooks
+backend/.python-deps
+backend/data
+backend/models/*.sanitized.keras

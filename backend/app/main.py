@@ -1,8 +1,9 @@
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -17,12 +18,19 @@ app = FastAPI(
     version="1.0.0",
 )
 
+DEFAULT_CORS_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", ",".join(DEFAULT_CORS_ORIGINS)).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -131,6 +139,11 @@ def health_check():
     )
 
 
+@app.get("/health", response_model=HealthResponse, include_in_schema=False)
+def health_check_alias():
+    return health_check()
+
+
 # ── Predictions ─────────────────────────────────────────────────────────────
 
 @app.post(
@@ -193,7 +206,14 @@ if FRONTEND_DIST.exists():
 def serve_frontend_index():
     index_path = FRONTEND_DIST / "index.html"
     if not index_path.exists():
-        raise HTTPException(status_code=404, detail="Frontend build not found. Run `npm run build` in frontend.")
+        return JSONResponse(
+            {
+                "service": "mindtrack-api",
+                "status": "ok",
+                "docs": "/docs",
+                "health": "/api/health",
+            }
+        )
     return FileResponse(index_path)
 
 
