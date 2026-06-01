@@ -1,5 +1,131 @@
 [
   {
+    "id": "c321e565-f2f5-4cc4-86a5-3e41d39ec7d8",
+    "created_at": "2026-05-28T12:53:49.831981+00:00",
+    "username": "bintang",
+    "student_data": {
+      "anxiety_level": 5,
+      "self_esteem": 26,
+      "mental_health_history": 0,
+      "depression": 4,
+      "headache": 2,
+      "sleep_quality": 5,
+      "academic_performance": 3,
+      "study_load": 1,
+      "future_career_concerns": 1,
+      "social_support": 3,
+      "peer_pressure": 1,
+      "bullying": 0,
+      "Age": 22,
+      "Total_App_Usage_Hours": 6.0,
+      "Daily_Screen_Time_Hours": 4.0,
+      "Number_of_Apps_Used": 16,
+      "Social_Media_Usage_Hours": 1.0,
+      "Productivity_App_Usage_Hours": 2.0,
+      "Gaming_App_Usage_Hours": 0.5,
+      "digital_overload_score": 6.0,
+      "productivity_balance_score": 0.5,
+      "study_stress_ratio": 1.0,
+      "mental_risk_score": 10
+    },
+    "result": {
+      "stress_level": 0,
+      "stress_class": "Rendah",
+      "confidence": 0.9888,
+      "probabilities": {
+        "rendah": 0.9888,
+        "sedang": 0.0077,
+        "tinggi": 0.0035
+      },
+      "recommendation": "Pola digital dan indikator psikologis terpantau rendah risiko. Pertahankan ritme tidur dan penggunaan aplikasi yang sehat.",
+      "ai_advice": "Terima kasih atas kesempatan untuk membantu kamu menjalani masa kuliah yang lebih seimbang! Berdasarkan hasil analisis, kamu memiliki tingkat stres yang rendah, namun saya ingin menekankan pentingnya menjaga keseimbangan antara aktivitas akademis dan waktu luang. Saya sarankan kamu untuk terus memantau dan mengatur waktu belanja online (screen time) serta media sosial untuk tidak berlebihan, dan juga terus menjaga kualitas tidur dan dukungan sosial yang sudah baik."
+    }
+  },
+  {
+    "id": "2d8aa36b-3264-463e-b3bc-69c2fe91778c",
+    "created_at": "2026-05-28T12:53:15.958055+00:00",
+    "username": "bintang",
+    "student_data": {
+      "anxiety_level": 14,
+      "self_esteem": 20,
+      "mental_health_history": 0,
+      "depression": 11,
+      "headache": 2,
+      "sleep_quality": 2,
+      "academic_performance": 3,
+      "study_load": 2,
+      "future_career_concerns": 3,
+      "social_support": 2,
+      "peer_pressure": 3,
+      "bullying": 2,
+      "Age": 22,
+      "Total_App_Usage_Hours": 6.0,
+      "Daily_Screen_Time_Hours": 7.0,
+      "Number_of_Apps_Used": 16,
+      "Social_Media_Usage_Hours": 3.0,
+      "Productivity_App_Usage_Hours": 2.0,
+      "Gaming_App_Usage_Hours": 2.0,
+      "digital_overload_score": 14.0,
+      "productivity_balance_score": 0.5,
+      "study_stress_ratio": 1.0,
+      "mental_risk_score": 30
+    },
+    "result": {
+      "stress_level": 1,
+      "stress_class": "Sedang",
+      "confidence": 0.9326,
+      "probabilities": {
+        "rendah": 0.0495,
+        "sedang": 0.9326,
+        "tinggi": 0.0179
+      },
+      "recommendation": "Ada indikasi stres sedang. Coba kurangi screen time berlebih, rapikan beban belajar, dan sisihkan waktu istirahat yang konsisten.",
+      "ai_advice": "\"Selamat datang, saya paham bahwa kamu sedang mengalami tingkat stres yang sedang, tetapi dengan kemampuan untuk menghadapinya yang cukup kuat (confidence 93,3%). Saya sarankan kamu untuk melakukan beberapa hal, seperti mengurangi screen time dan media sosialmu menjadi 5 jam saja per hari, serta meningkatkan kualitas tidurmu menjadi minimal 3,5/5 dengan menggunakan strategi seperti membuat jadwal tidur yang konsisten. Dengan melakukan hal-hal tersebut, kamu dapat merasa lebih tenang dan memiliki kekuatan untuk menghadapi beban belajar yang cukup berat.\""
+    }
+  },
+  {
+    "id": "884b3741-66ee-4d02-af87-33ad0ac9dc79",
+    "created_at": "2026-05-28T12:53:15.291290+00:00",
+    "username": "bintang",
+    "student_data": {
+      "anxiety_level": 18,
+      "self_esteem": 5,
+      "mental_health_history": 1,
+      "depression": 20,
+      "headache": 4,
+      "sleep_quality": 1,
+      "academic_performance": 1,
+      "study_load": 5,
+      "future_career_concerns": 5,
+      "social_support": 1,
+      "peer_pressure": 5,
+      "bullying": 4,
+      "Age": 22,
+      "Total_App_Usage_Hours": 6.0,
+      "Daily_Screen_Time_Hours": 12.0,
+      "Number_of_Apps_Used": 16,
+      "Social_Media_Usage_Hours": 4.5,
+      "Productivity_App_Usage_Hours": 0.5,
+      "Gaming_App_Usage_Hours": 4.0,
+      "digital_overload_score": 20.0,
+      "productivity_balance_score": 0.05,
+      "study_stress_ratio": 4.5,
+      "mental_risk_score": 50
+    },
+    "result": {
+      "stress_level": 2,
+      "stress_class": "Tinggi",
+      "confidence": 0.986,
+      "probabilities": {
+        "rendah": 0.0095,
+        "sedang": 0.0045,
+        "tinggi": 0.986
+      },
+      "recommendation": "Indikasi stres tinggi terdeteksi. Evaluasi jadwal digital, kualitas tidur, dan pertimbangkan berbicara dengan dosen wali atau konselor kampus.",
+      "ai_advice": "Saya paham bahwa kamu sedang mengalami tingkat stres yang tinggi, dan saya ingin membantu kamu mengatasi itu. Pertama-tama, saya sarankan kamu untuk mengatur waktu screen time dan media sosialmu, misalnya dengan membatasi penggunaan ponselmu selama 1-2 jam sebelum tidur, agar kamu bisa mendapatkan kualitas tidur yang lebih baik. Selain itu, saya juga ingin kamu memprioritaskan kegiatan self-care seperti olahraga ringan atau meditasi untuk mengurangi kecemasan dan meningkatkan kepercayaan diri."
+    }
+  },
+  {
     "id": "f824caeb-1c57-4fc9-ad50-d6b512315abe",
     "created_at": "2026-05-28T11:11:24.199737+00:00",
     "username": "bintang",
