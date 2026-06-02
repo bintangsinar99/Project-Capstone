@@ -13,5 +13,15 @@
     "created_at": "2026-05-30T12:51:49.486377+00:00",
     "updated_at": "2026-05-30T12:51:49.486377+00:00",
     "last_login_at": null
+  },
+  {
+    "id": "ce51c7d7-a788-49ba-994a-b485dd04a216",
+    "username": "Syahdin",
+    "password_hash": "pbkdf2_sha256$260000$LRId+I+mgyUfU3665eDZhg==$IvEiwdPhAEgtaYovOfOEZDyuIVIIrHC8EX1UzT7HKkk=",
+    "role": "user",
+    "token": "4486c536-ada0-4d04-a350-6ad864cc6414",
+    "created_at": "2026-06-02T11:12:13.873524+00:00",
+    "updated_at": "2026-06-02T11:12:13.873524+00:00",
+    "last_login_at": null
   }
 ]
