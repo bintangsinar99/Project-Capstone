@@ -133,19 +133,6 @@ $env:DATABASE_SSLMODE="require"
 
 Saat `DATABASE_URL` aktif, backend otomatis membuat tabel `users` jika belum ada.
 
-Catatan admin monitoring, opsional:
-
-Untuk percobaan halaman admin, isi juga `ADMIN_USERNAME` dan `ADMIN_PASSWORD` di `backend/.env`.
-
-```env
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin123
-```
-
-Setelah backend dijalankan ulang, login memakai akun admin tersebut akan membuka halaman monitoring khusus admin. User biasa tetap bisa register memakai username bebas, kecuali username yang sama dengan `ADMIN_USERNAME`.
-
-Untuk menonaktifkan admin, kosongkan kembali `ADMIN_PASSWORD`.
-
 ### 7. Jalankan aplikasi
 
 Masih dari folder `backend`, jalankan:

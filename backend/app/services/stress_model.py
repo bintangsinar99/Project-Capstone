@@ -37,6 +37,8 @@ ENSEMBLE_META_PATH = Path(os.getenv("ENSEMBLE_META_PATH", MODEL_DIR / "ensemble_
 SCALER_PATH = Path(os.getenv("SCALER_PATH", MODEL_DIR / "scaler_params.json"))
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+MODEL_API_URL = os.getenv("MODEL_API_URL", "").rstrip("/")
+MODEL_API_PREDICT_PATH = os.getenv("MODEL_API_PREDICT_PATH", "/api/predictions")
 GROQ_FALLBACK_MODELS = [
     GROQ_MODEL,
     "llama-3.1-8b-instant",
@@ -117,6 +119,9 @@ def load_artifacts() -> None:
 
 
 def predict_stress(data: StudentData) -> dict:
+    if _model_api_url():
+        return _predict_stress_remote(data)
+
     load_artifacts()
 
     import numpy as np
@@ -142,6 +147,44 @@ def predict_stress(data: StudentData) -> dict:
             "ai_advice": get_ai_advice(CLASS_NAMES[stress_level], confidence, data.model_dump()),
         },
     }
+
+
+def _predict_stress_remote(data: StudentData) -> dict:
+    import requests
+
+    response = requests.post(
+        f"{_model_api_url()}{MODEL_API_PREDICT_PATH}",
+        json=data.model_dump(),
+        timeout=30,
+    )
+    if not response.ok:
+        raise RuntimeError(
+            f"Model API gagal merespons: {response.status_code} {response.reason}: {response.text[:300]}"
+        )
+
+    remote_result = response.json()
+    stress_level = int(remote_result["stress_level"])
+    recommendation = (
+        remote_result.get("recommendation")
+        or remote_result.get("rekomendasi")
+        or CLASS_ADVICE[stress_level]
+    )
+
+    return {
+        "student_data": data.model_dump(),
+        "result": {
+            "stress_level": stress_level,
+            "stress_class": remote_result["stress_class"],
+            "confidence": float(remote_result["confidence"]),
+            "probabilities": remote_result["probabilities"],
+            "recommendation": recommendation,
+            "ai_advice": remote_result.get("ai_advice") or recommendation,
+        },
+    }
+
+
+def _model_api_url() -> str:
+    return os.getenv("MODEL_API_URL", MODEL_API_URL).rstrip("/")
 
 
 def _prepare_model_input(payload: dict, np):
@@ -251,6 +294,30 @@ def is_model_available() -> bool:
 
 
 def model_status() -> dict:
+    model_api_url = _model_api_url()
+    if model_api_url:
+        try:
+            import requests
+
+            response = requests.get(f"{model_api_url}/api/health", timeout=5)
+            response.raise_for_status()
+            remote_status = response.json()
+            return {
+                "loaded": bool(remote_status.get("model_loaded", True)),
+                "available": True,
+                "detail": f"Remote model API: {model_api_url}",
+                "mode": "remote",
+                "n_models": int(remote_status.get("n_models", 1)),
+            }
+        except Exception as exc:
+            return {
+                "loaded": False,
+                "available": False,
+                "detail": f"Remote model API tidak dapat diakses: {exc}",
+                "mode": "remote",
+                "n_models": 0,
+            }
+
     ensemble_paths, _, _ = _read_ensemble_meta()
     available_mode = "ensemble" if ensemble_paths else "single"
     available_count = len(ensemble_paths) if ensemble_paths else (1 if MODEL_PATH.exists() else 0)

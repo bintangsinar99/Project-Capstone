@@ -17,12 +17,10 @@ DATABASE_URL=<connection string PostgreSQL>
 DATABASE_SSLMODE=require
 ```
 
-Tambahkan juga berikut ini jika fitur terkait digunakan:
+Tambahkan juga berikut ini jika fitur saran AI digunakan:
 
 ```text
 GROQ_API_KEY=<API key Groq>
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=<password admin>
 ```
 
 Jangan memasukkan password atau API key ke file yang di-commit.

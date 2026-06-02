@@ -70,9 +70,6 @@ class UserStore:
         self._load_local_env()
         self.file_path = file_path or Path(__file__).resolve().parents[2] / "data" / "users.json"
         self.database_url = database_url or os.getenv("DATABASE_URL")
-        self.admin_username = os.getenv("ADMIN_USERNAME", "admin").strip()
-        self.admin_password = os.getenv("ADMIN_PASSWORD", "").strip()
-        self.admin_tokens: set[str] = set()
         self.mode = "postgresql" if self.database_url else "json"
 
         if self.mode == "postgresql":
@@ -154,20 +151,9 @@ class UserStore:
                 return cursor.fetchone() is not None
 
     def username_exists(self, username: str) -> bool:
-        if self.admin_username and username == self.admin_username:
-            return True
         if self.mode == "postgresql":
             return self._username_exists_postgres(username)
         return self._username_exists_json(username)
-
-    def count_users(self) -> int:
-        if self.mode == "postgresql":
-            with self._connect() as connection:
-                with connection.cursor() as cursor:
-                    cursor.execute("SELECT COUNT(*) FROM users WHERE role = 'user'")
-                    return int(cursor.fetchone()[0])
-
-        return sum(1 for user in self._read_json() if user.get("role", "user") == "user")
 
     def _register_json(self, username: str, password: str) -> dict:
         users = self._read_json()
@@ -217,10 +203,6 @@ class UserStore:
         return self._register_json(username, password)
 
     def _login_json(self, username: str, password: str) -> dict | None:
-        admin_result = self._login_admin(username, password)
-        if admin_result:
-            return admin_result
-
         users = self._read_json()
         for user in users:
             if user.get("username") != username:
@@ -241,10 +223,6 @@ class UserStore:
         return None
 
     def _login_postgres(self, username: str, password: str) -> dict | None:
-        admin_result = self._login_admin(username, password)
-        if admin_result:
-            return admin_result
-
         with self._connect() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -271,26 +249,6 @@ class UserStore:
             connection.commit()
 
         return {"username": username, "token": token, "role": row[1] or "user"}
-
-    def _login_admin(self, username: str, password: str) -> dict | None:
-        if not self.admin_username or not self.admin_password:
-            return None
-        if username != self.admin_username:
-            return None
-        if not hmac.compare_digest(password, self.admin_password):
-            return None
-        token = f"admin-{uuid4()}"
-        self.admin_tokens.add(token)
-        return {"username": username, "token": token, "role": "admin"}
-
-    def is_admin_session(self, username: str | None, token: str | None, role: str | None) -> bool:
-        if role != "admin":
-            return False
-        if username != self.admin_username:
-            return False
-        if not token:
-            return False
-        return token in self.admin_tokens
 
     def login(self, username: str, password: str) -> dict | None:
         if self.mode == "postgresql":

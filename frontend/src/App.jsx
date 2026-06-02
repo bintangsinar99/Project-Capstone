@@ -6,7 +6,6 @@ import {
   BookOpen,
   Brain,
   ChevronDown,
-  ChevronRight,
   CheckCircle2,
   Droplets,
   Eye,
@@ -40,7 +39,6 @@ import {
   checkApiHealth,
   createPrediction,
   deletePrediction,
-  getAdminOverview,
   getPredictions,
   login as apiLogin,
   register as apiRegister,
@@ -161,14 +159,33 @@ const navItems = [
   ["prediction", Brain, "Prediction Form"],
   ["history", History, "Mood History"],
   ["resources", BookOpen, "Resources"],
-  ["settings", Settings, "Settings"],
 ];
 
 const interventions = [
-  [Droplets, "Hydration Check", "Drink 250ml water now."],
-  [Moon, "Power Nap", "Rest for 15 mins."],
-  [Footprints, "Quick Walk", "5 min air break."],
-  [Zap, "Digital Detox", "Eyes off screen."],
+  [
+    Droplets,
+    "Hydration Check",
+    "Minum air untuk menjaga fokus.",
+    "Minum segelas air sekitar 250 ml secara perlahan. Setelah itu, beri tubuh waktu sejenak sebelum kembali beraktivitas.",
+  ],
+  [
+    Moon,
+    "Power Nap",
+    "Istirahat singkat selama 15-20 menit.",
+    "Atur alarm selama 15-20 menit, cari posisi yang nyaman, lalu pejamkan mata dan istirahatkan tubuh. Hindari tidur terlalu lama agar tubuh tetap segar setelah bangun.",
+  ],
+  [
+    Footprints,
+    "Quick Walk",
+    "Berjalan ringan selama 5 menit.",
+    "Tinggalkan meja sejenak dan berjalan santai selama sekitar 5 menit. Bila memungkinkan, arahkan perhatian pada langkah kaki dan lingkungan di sekitarmu.",
+  ],
+  [
+    Zap,
+    "Digital Detox",
+    "Jeda layar selama 10 menit.",
+    "Jauhkan ponsel dan layar selama 10 menit. Gunakan jeda ini untuk mengistirahatkan mata, meregangkan tubuh, atau duduk tenang tanpa membuka notifikasi.",
+  ],
 ];
 
 function App() {
@@ -177,9 +194,6 @@ function App() {
   );
   const [currentUsername, setCurrentUsername] = useState(
     () => localStorage.getItem("mindtrack-username") || "",
-  );
-  const [currentRole, setCurrentRole] = useState(
-    () => localStorage.getItem("mindtrack-role") || "user",
   );
   const [publicView, setPublicView] = useState("landing");
   const [activeView, setActiveView] = useState("dashboard");
@@ -201,8 +215,6 @@ function App() {
   const [registerForm, setRegisterForm] = useState({ username: "", password: "" });
   const [registerError, setRegisterError] = useState("");
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
-  const [adminOverview, setAdminOverview] = useState(null);
-  const [adminError, setAdminError] = useState("");
 
   const latest = history[0];
   const latestResult = latest?.result;
@@ -215,19 +227,23 @@ function App() {
       return;
     }
 
-    if (currentRole === "admin") {
-      refreshAdminOverview();
-      return;
-    }
-
-    if (currentRole === "user") {
-      refreshData();
-    }
-  }, [isAuthenticated, currentUsername, currentRole]);
+    refreshData();
+  }, [isAuthenticated, currentUsername]);
 
   useEffect(() => {
     localStorage.setItem("mindtrack-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (!isAuthenticated && publicView === "landing") {
+      return;
+    }
+
+    if (window.location.hash) {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [isAuthenticated, publicView]);
 
   async function refreshData() {
     setError("");
@@ -289,8 +305,11 @@ function App() {
     showToast.timeout = window.setTimeout(() => setToast(""), 2800);
   }
 
-  function startSession(title = "10-minute Mindfulness Meditation") {
-    setActiveSession({ title, startedAt: new Date().toLocaleTimeString("id-ID") });
+  function startSession(
+    title = "Meditasi Mindfulness 10 Menit",
+    instruction = "Tarik napas perlahan selama 4 detik, tahan 4 detik, lalu hembuskan selama 6 detik. Ulangi beberapa kali sampai tubuh terasa lebih stabil.",
+  ) {
+    setActiveSession({ title, instruction, startedAt: new Date().toLocaleTimeString("id-ID") });
   }
 
   function saveReport() {
@@ -322,11 +341,8 @@ function App() {
     localStorage.removeItem("mindtrack-token");
     localStorage.removeItem("mindtrack-role");
     setCurrentUsername("");
-    setCurrentRole("user");
     setHistory([]);
     setHealth(null);
-    setAdminOverview(null);
-    setAdminError("");
     setError("");
     setIsAuthenticated(false);
     setActiveView("dashboard");
@@ -347,9 +363,7 @@ function App() {
       localStorage.setItem("mindtrack-session", "active");
       localStorage.setItem("mindtrack-username", data.username);
       localStorage.setItem("mindtrack-token", data.token);
-      localStorage.setItem("mindtrack-role", data.role || "user");
       setCurrentUsername(data.username);
-      setCurrentRole(data.role || "user");
       setHistory([]);
       setActiveView("dashboard");
       setIsAuthenticated(true);
@@ -383,9 +397,7 @@ function App() {
       localStorage.setItem("mindtrack-session", "active");
       localStorage.setItem("mindtrack-username", data.username);
       localStorage.setItem("mindtrack-token", data.token);
-      localStorage.setItem("mindtrack-role", data.role || "user");
       setCurrentUsername(data.username);
-      setCurrentRole(data.role || "user");
       setHistory([]);
       setActiveView("dashboard");
       setIsAuthenticated(true);
@@ -433,31 +445,6 @@ function App() {
         onSubmit={handleLogin}
         onBack={() => setPublicView("landing")}
         onOpenRegister={() => setPublicView("register")}
-      />
-    );
-  }
-
-  async function refreshAdminOverview() {
-    setAdminError("");
-    try {
-      const data = await getAdminOverview();
-      setAdminOverview(data);
-      setStatus("online");
-    } catch (err) {
-      setStatus("offline");
-      setAdminError(err.response?.data?.detail || "Admin overview gagal dimuat.");
-    }
-  }
-
-  if (currentRole === "admin") {
-    return (
-      <AdminDashboard
-        theme={theme}
-        username={currentUsername}
-        overview={adminOverview}
-        error={adminError}
-        onRefresh={refreshAdminOverview}
-        onLogout={handleLogout}
       />
     );
   }
@@ -533,17 +520,13 @@ function App() {
             <div className="avatar">{getUserInitial(currentUsername)}</div>
           </div>
           {showNotifications && (
-            <NotificationsPanel status={status} history={history} onClose={() => setShowNotifications(false)} />
+            <NotificationsPanel history={history} onClose={() => setShowNotifications(false)} />
           )}
           {showSettingsMenu && (
             <SettingsMenu
               health={health}
               status={status}
               onClose={() => setShowSettingsMenu(false)}
-              onOpenSettings={() => {
-                setActiveView("settings");
-                setShowSettingsMenu(false);
-              }}
               onRefresh={async () => {
                 await refreshData();
                 setShowSettingsMenu(false);
@@ -559,14 +542,6 @@ function App() {
             />
           )}
         </header>
-
-        <div className={`api-status ${status}`}>
-          <Activity size={16} />
-          <span>{statusLabel(status, health)}</span>
-          <button className="refresh-button" type="button" onClick={refreshData} aria-label="Refresh API status">
-            <RefreshCw size={14} />
-          </button>
-        </div>
 
         {error && <p className="error-message">{error}</p>}
 
@@ -607,8 +582,6 @@ function App() {
 
         {activeView === "resources" && <ResourcesView startSession={startSession} />}
 
-        {activeView === "settings" && <SettingsView health={health} status={status} refreshData={refreshData} />}
-
         {toast && <Toast message={toast} />}
         {activeSession && <SessionModal session={activeSession} onClose={() => setActiveSession(null)} />}
       </section>
@@ -616,157 +589,31 @@ function App() {
   );
 }
 
-function AdminDashboard({ theme, username, overview, error, onRefresh, onLogout }) {
-  const recent = overview?.recent_predictions || [];
-
-  return (
-    <main className="admin-page" data-theme={theme}>
-      <aside className="admin-sidebar">
-        <div className="brand">
-          <span className="brand-mark">M</span>
-          <div>
-            <strong>MindTrack Admin</strong>
-            <small>System Health Dashboard</small>
-          </div>
-        </div>
-        <div className="admin-profile">
-          <div className="avatar">{getUserInitial(username)}</div>
-          <div>
-            <strong>{formatUsername(username)}</strong>
-            <span>Administrator</span>
-          </div>
-        </div>
-        <button className="screening-button" type="button" onClick={onRefresh}>
-          <RefreshCw size={18} />
-          Refresh Status
-        </button>
-        <button className="logout-button" type="button" onClick={onLogout}>
-          <LogOut size={20} />
-          Logout
-        </button>
-      </aside>
-
-      <section className="admin-main">
-        <header className="admin-header">
-          <div>
-            <span>Admin Monitoring</span>
-            <h1>System Health</h1>
-            <p>Cek kondisi API, model, database, user, dan prediksi terbaru dari satu halaman.</p>
-          </div>
-          <button className="primary-button" type="button" onClick={onRefresh}>
-            <RefreshCw size={18} />
-            Refresh
-          </button>
-        </header>
-
-        {error && <p className="error-message">{error}</p>}
-
-        <section className="admin-grid">
-          <AdminStatusCard
-            icon={Activity}
-            label="API Status"
-            value={overview?.api_status || "Checking"}
-            detail="FastAPI service"
-          />
-          <AdminStatusCard
-            icon={Brain}
-            label="Model"
-            value={overview?.model_loaded ? "Loaded" : "Not Ready"}
-            detail={overview?.model_mode || "Unknown mode"}
-          />
-          <AdminStatusCard
-            icon={ShieldCheck}
-            label="Auth Store"
-            value={overview?.auth_store || "-"}
-            detail="Login/register storage"
-          />
-          <AdminStatusCard
-            icon={User}
-            label="Users"
-            value={overview?.user_count ?? 0}
-            detail="Registered user accounts"
-          />
-          <AdminStatusCard
-            icon={BarChart3}
-            label="Predictions"
-            value={overview?.prediction_count ?? 0}
-            detail="Total saved assessments"
-          />
-          <AdminStatusCard
-            icon={CheckCircle2}
-            label="Loaded Models"
-            value={overview?.n_models ?? 0}
-            detail="Model files available"
-          />
-        </section>
-
-        <section className="admin-panel">
-          <div className="table-title">
-            <h2>Recent Predictions</h2>
-            <span>{recent.length} latest records</span>
-          </div>
-          {recent.length === 0 ? (
-            <div className="dashboard-empty-history">
-              <History size={26} />
-              <strong>Belum ada prediksi tersimpan</strong>
-              <span>Data akan muncul setelah user melakukan assessment.</span>
-            </div>
-          ) : (
-            <div className="admin-records">
-              {recent.map((item) => (
-                <article key={item.id}>
-                  <div>
-                    <strong>{item.username || "anonymous"}</strong>
-                    <span>{item.created_at ? new Date(item.created_at).toLocaleString("id-ID") : "-"}</span>
-                  </div>
-                  <p>{item.result?.stress_class || "Unknown"}</p>
-                  <small>{item.result?.recommendation || "No recommendation available."}</small>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-      </section>
-    </main>
-  );
-}
-
-function AdminStatusCard({ icon: Icon, label, value, detail }) {
-  return (
-    <article className="admin-card">
-      <Icon size={26} />
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{detail}</small>
-    </article>
-  );
-}
-
 function LandingPage({ theme, onOpenLogin, onOpenRegister }) {
-  const stats = [
-    ["75%", "Report High Stress", "Students report recurring pressure during peak study periods."],
-    ["48%", "Digital Burnout", "Daily app habits can quietly increase cognitive fatigue."],
-    ["1 in 3", "Need Support", "Many students delay help until stress becomes visible."],
+  const highlights = [
+    [Brain, "Kenali Pola Stres", "Perhatikan hubungan antara kondisi emosional, tekanan akademik, dan kebiasaan digital."],
+    [Activity, "Pantau Kebiasaan", "Gunakan assessment berkala untuk melihat perubahan pola aktivitas dan kesejahteraanmu."],
+    [ShieldCheck, "Cari Dukungan", "Jadikan hasil screening sebagai bahan refleksi dan pertimbangkan bantuan saat dibutuhkan."],
   ];
 
   const features = [
-    [Brain, "AI Stress Prediction", "Our model analyzes digital and wellness markers to estimate stress risk early."],
-    [Sparkles, "Personalized Recommendations", "Actionable micro-interventions for study breaks, sleep, and focus."],
-    [Activity, "Activity Monitoring", "Track screen balance, app usage, and daily wellbeing patterns."],
-    [History, "Prediction History", "Review previous assessments and changes in stress indicators."],
+    [Brain, "Prediksi Tingkat Stres", "Model menganalisis indikator psikologis, akademik, dan aktivitas digital untuk memperkirakan tingkat stres."],
+    [Sparkles, "Rekomendasi Personal", "Dapatkan langkah sederhana yang dapat dilakukan untuk beristirahat, tidur lebih baik, dan menjaga fokus."],
+    [Activity, "Pemantauan Aktivitas", "Pantau keseimbangan waktu layar, penggunaan aplikasi, dan pola kesejahteraan harian."],
+    [History, "Riwayat Assessment", "Tinjau hasil screening sebelumnya untuk memahami perubahan indikator stres dari waktu ke waktu."],
   ];
 
   const steps = [
-    [Send, "Fill Form", "Share daily activity and wellness indicators."],
-    [Brain, "AI Analysis", "Model processes mental and digital patterns."],
-    [BarChart3, "Get Results", "Review confidence score and intensity map."],
-    [ShieldCheck, "Recommendations", "Receive practical next steps."],
+    [Send, "Isi Formulir", "Bagikan indikator aktivitas harian dan kondisi kesejahteraanmu."],
+    [Brain, "Analisis AI", "Model memproses pola psikologis, akademik, dan digital."],
+    [BarChart3, "Lihat Hasil", "Tinjau tingkat stres, confidence score, dan peta intensitas."],
+    [ShieldCheck, "Ikuti Rekomendasi", "Pilih langkah praktis yang sesuai dengan kebutuhanmu."],
   ];
 
-  const testimonials = [
-    ["Sarah", "Psychology Student", "MindTrack helped me notice my late-night study habits before burnout started."],
-    ["Michael", "Engineering Student", "The study break recommendations feel practical and easy to follow."],
-    ["Anya", "Final Year Student", "Seeing the data helped me stay grounded during finals week."],
+  const useCases = [
+    [Moon, "Refleksi Kebiasaan Tidur", "Kenali pola tidur yang mungkin berkaitan dengan perubahan tingkat stres."],
+    [Activity, "Evaluasi Aktivitas Digital", "Perhatikan penggunaan layar dan aplikasi ketika beban akademik meningkat."],
+    [Sparkles, "Langkah Kecil yang Praktis", "Pilih rekomendasi singkat yang realistis untuk dilakukan di sela aktivitas kuliah."],
   ];
 
   return (
@@ -777,14 +624,14 @@ function LandingPage({ theme, onOpenLogin, onOpenRegister }) {
           <strong>MindTrack</strong>
         </div>
         <nav>
-          <a href="#home">Home</a>
-          <a href="#features">Features</a>
-          <a href="#about">About</a>
+          <a href="#home">Beranda</a>
+          <a href="#features">Fitur</a>
+          <a href="#about">Tentang</a>
           <a href="#faq">FAQ</a>
         </nav>
         <div>
-          <button type="button" className="landing-login" onClick={onOpenLogin}>Login</button>
-          <button type="button" className="landing-register" onClick={onOpenRegister}>Register</button>
+          <button type="button" className="landing-login" onClick={onOpenLogin}>Masuk</button>
+          <button type="button" className="landing-register" onClick={onOpenRegister}>Daftar</button>
         </div>
       </header>
 
@@ -792,16 +639,16 @@ function LandingPage({ theme, onOpenLogin, onOpenRegister }) {
         <div className="landing-copy">
           <span className="landing-badge">
             <Sparkles size={15} />
-            AI-powered student wellbeing
+            Screening kesejahteraan mahasiswa berbasis AI
           </span>
-          <h1>Understand Your Mental Health Through Digital Activity Patterns</h1>
+          <h1>Pahami Pola Stresmu Melalui Aktivitas Digital</h1>
           <p>
-            AI-based stress detection for university students. Discover patterns in your daily digital life to manage
-            stress before it becomes overwhelming.
+            MindTrack membantu mahasiswa mengenali hubungan antara kondisi psikologis, aktivitas akademik, dan kebiasaan
+            digital agar dapat mengambil langkah sederhana lebih awal.
           </p>
           <div className="landing-actions">
-            <button type="button" className="landing-primary" onClick={onOpenRegister}>Start Screening</button>
-            <a href="#features" className="landing-secondary">Learn More</a>
+            <button type="button" className="landing-primary" onClick={onOpenRegister}>Mulai Screening</button>
+            <a href="#features" className="landing-secondary">Pelajari Lebih Lanjut</a>
           </div>
         </div>
 
@@ -814,8 +661,8 @@ function LandingPage({ theme, onOpenLogin, onOpenRegister }) {
             <div className="preview-callout">
               <Sparkles size={22} />
               <div>
-                <strong>Real-time AI Insight</strong>
-                <span>Stress signals detected from digital balance.</span>
+                <strong>Insight AI Personal</strong>
+                <span>Kenali pola stres dari indikator aktivitasmu.</span>
               </div>
             </div>
           </div>
@@ -824,13 +671,13 @@ function LandingPage({ theme, onOpenLogin, onOpenRegister }) {
 
       <section className="landing-section center" id="about">
         <div className="landing-section-title">
-          <h2>Modern Education, Modern Challenges</h2>
-          <p>Digital academic pressure is measurable when behavior patterns are seen clearly.</p>
+          <h2>Tekanan Akademik di Era Digital</h2>
+          <p>MindTrack membantu mengubah kebiasaan harian menjadi insight yang lebih mudah dipahami.</p>
         </div>
         <div className="landing-stats">
-          {stats.map(([value, title, text]) => (
+          {highlights.map(([Icon, title, text]) => (
             <article key={title}>
-              <strong>{value}</strong>
+              <span className="landing-stat-icon"><Icon size={24} /></span>
               <h3>{title}</h3>
               <p>{text}</p>
             </article>
@@ -841,17 +688,13 @@ function LandingPage({ theme, onOpenLogin, onOpenRegister }) {
       <section className="landing-section" id="features">
         <div className="landing-section-row">
           <div>
-            <h2>Empathetic Intelligence</h2>
-            <p>A supportive AI experience designed for student wellbeing.</p>
-          </div>
-          <div className="landing-arrows">
-            <button type="button" aria-label="Previous feature"><ChevronRight size={18} /></button>
-            <button type="button" aria-label="Next feature"><ChevronRight size={18} /></button>
+            <h2>Insight yang Suportif</h2>
+            <p>Fitur yang dirancang untuk membantu mahasiswa memahami kondisi diri dengan lebih tenang.</p>
           </div>
         </div>
         <div className="landing-feature-grid">
-          {features.map(([Icon, title, text], index) => (
-            <article className={index === 0 ? "feature-large" : ""} key={title}>
+          {features.map(([Icon, title, text]) => (
+            <article key={title}>
               <span><Icon size={24} /></span>
               <div>
                 <h3>{title}</h3>
@@ -862,8 +705,8 @@ function LandingPage({ theme, onOpenLogin, onOpenRegister }) {
         </div>
       </section>
 
-      <section className="landing-section center">
-        <h2>Your Path to Clarity</h2>
+      <section className="landing-section center" id="steps">
+        <h2>Langkah Menuju Pemahaman Diri</h2>
         <div className="landing-steps">
           {steps.map(([Icon, title, text]) => (
             <article key={title}>
@@ -876,6 +719,13 @@ function LandingPage({ theme, onOpenLogin, onOpenRegister }) {
       </section>
 
       <section className="mockup-band">
+        <div className="mockup-intro">
+          <span><BarChart3 size={20} /></span>
+          <div>
+            <h2>Pantau Perkembanganmu</h2>
+            <p>Lihat ringkasan indikator kesejahteraan dalam tampilan yang mudah dipahami.</p>
+          </div>
+        </div>
         <div className="browser-mockup">
           <div className="browser-top">
             <span /><span /><span />
@@ -885,77 +735,116 @@ function LandingPage({ theme, onOpenLogin, onOpenRegister }) {
             <aside><span /><span /><span /></aside>
             <section>
               <div className="mockup-head">
-                <h3>Weekly Overview</h3>
-                <button type="button">Aug 4 - Aug 11</button>
+                <h3>Ringkasan Mingguan</h3>
+                <button type="button">4 Agu - 11 Agu</button>
               </div>
               <div className="mockup-metrics">
-                <div><span>Stress Index</span><strong>Low</strong></div>
-                <div><span>Sleep Quality</span><strong>7.5h</strong></div>
-                <div><span>Screen Balance</span><strong>Good</strong></div>
+                <div><span>Indeks Stres</span><strong>Rendah</strong></div>
+                <div><span>Kualitas Tidur</span><strong>7,5 jam</strong></div>
+                <div><span>Keseimbangan Layar</span><strong>Baik</strong></div>
               </div>
-              <div className="mockup-chart"><span /></div>
+              <div className="mockup-chart">
+                <div className="mockup-chart-bars" aria-label="Contoh tren indeks stres selama tujuh hari">
+                  {[42, 54, 48, 66, 58, 38, 32].map((value, index) => (
+                    <span key={index} style={{ "--chart-height": `${value}%` }} />
+                  ))}
+                </div>
+                <div className="mockup-chart-labels">
+                  {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((day) => <small key={day}>{day}</small>)}
+                </div>
+              </div>
             </section>
           </div>
         </div>
       </section>
 
-      <section className="landing-disclaimer">
+      <section className="landing-disclaimer" id="disclaimer">
         <ShieldCheck size={28} />
         <p>
-          <strong>Medical Disclaimer:</strong> MindTrack is intended for mental wellness insight and does not replace
-          professional medical diagnosis. If you are in crisis, contact local emergency services or university support.
+          <strong>Catatan Penting:</strong> MindTrack adalah alat screening dan refleksi kesejahteraan, bukan pengganti
+          diagnosis atau bantuan profesional. Jika kamu berada dalam kondisi krisis, segera hubungi layanan darurat atau
+          dukungan kampus.
         </p>
       </section>
 
       <section className="landing-section center">
-        <h2>What Students Say</h2>
+        <div className="landing-section-title">
+          <h2>Manfaat untuk Aktivitas Mahasiswa</h2>
+          <p>Contoh penggunaan MindTrack dalam rutinitas perkuliahan sehari-hari.</p>
+        </div>
         <div className="testimonial-grid">
-          {testimonials.map(([name, role, text]) => (
-            <article key={name}>
-              <div>*****</div>
-              <p>"{text}"</p>
-              <footer>
-                <span />
-                <div>
-                  <strong>{name}</strong>
-                  <small>{role}</small>
-                </div>
-              </footer>
+          {useCases.map(([Icon, title, text]) => (
+            <article key={title}>
+              <span className="landing-usecase-icon"><Icon size={22} /></span>
+              <h3>{title}</h3>
+              <p>{text}</p>
             </article>
           ))}
         </div>
       </section>
 
       <section className="landing-faq" id="faq">
-        <h2>Common Questions</h2>
+        <h2>Pertanyaan Umum</h2>
         <details open>
-          <summary>Is my data secure?<ChevronDown size={18} /></summary>
-          <p>Your data is used for wellness tracking in this capstone prototype and is stored locally by the backend.</p>
+          <summary>Apakah data saya aman?<ChevronDown size={18} /></summary>
+          <p>Data digunakan untuk menyimpan akun, riwayat assessment, dan insight personal melalui backend aplikasi.</p>
         </details>
         <details>
-          <summary>How does the AI detect stress?<ChevronDown size={18} /></summary>
-          <p>The model combines self-reported indicators with digital activity features to estimate stress level.</p>
+          <summary>Bagaimana AI memperkirakan tingkat stres?<ChevronDown size={18} /></summary>
+          <p>Model memadukan indikator yang kamu isi dengan fitur aktivitas digital untuk memperkirakan tingkat stres.</p>
         </details>
         <details>
-          <summary>Can I share results with my counselor?<ChevronDown size={18} /></summary>
-          <p>You can save a report from the results page and use it as a discussion aid.</p>
+          <summary>Apakah hasilnya dapat dibagikan kepada konselor?<ChevronDown size={18} /></summary>
+          <p>Kamu dapat menyimpan hasil assessment dan menggunakannya sebagai bahan diskusi bersama tenaga profesional.</p>
         </details>
       </section>
 
       <section className="landing-cta">
-        <h2>Take the first step towards better mental wellbeing</h2>
-        <p>Let MindTrack help you understand patterns, reflect clearly, and take practical action.</p>
-        <button type="button" onClick={onOpenRegister}>Start Screening</button>
+        <h2>Mulai memahami pola kesejahteraanmu</h2>
+        <p>Gunakan MindTrack untuk mengenali perubahan, melakukan refleksi, dan memilih langkah sederhana yang realistis.</p>
+        <button type="button" onClick={onOpenRegister}>Mulai Screening</button>
       </section>
 
       <footer className="landing-footer">
-        <div>
-          <strong>MindTrack</strong>
-          <p>Kecerdasan suportif untuk kesehatan mental.</p>
+        <div className="landing-footer-main">
+          <div className="landing-footer-brand">
+            <div className="landing-brand">
+              <span className="brand-mark">M</span>
+              <strong>MindTrack</strong>
+            </div>
+            <p>Screening suportif untuk membantu mahasiswa memahami pola stres dan kebiasaan digital.</p>
+            <button type="button" onClick={onOpenRegister}>
+              <Sparkles size={17} />
+              Mulai Screening
+            </button>
+          </div>
+
+          <div className="landing-footer-column">
+            <strong>Produk</strong>
+            <a href="#features"><Sparkles size={17} />Fitur</a>
+            <a href="#steps"><Send size={17} />Cara Kerja</a>
+            <a href="#about"><BarChart3 size={17} />Insight</a>
+          </div>
+
+          <div className="landing-footer-column">
+            <strong>Dukungan</strong>
+            <a href="#faq"><HelpCircle size={17} />Pusat Bantuan</a>
+            <a href="#disclaimer"><ShieldCheck size={17} />Privasi Data</a>
+            <a href="#disclaimer"><FileText size={17} />Catatan Penting</a>
+          </div>
+
+          <div className="landing-footer-column">
+            <strong>Akses Cepat</strong>
+            <button type="button" className="landing-footer-link" onClick={onOpenLogin}><User size={17} />Masuk ke Akun</button>
+            <a href="#faq"><BookOpen size={17} />FAQ</a>
+            <a href="#home"><Activity size={17} />Kembali ke Atas</a>
+          </div>
         </div>
-        <div><strong>Produk</strong><span>Fitur</span><span>Cara Kerja</span><span>Riset</span></div>
-        <div><strong>Dukungan</strong><span>Hubungi Dukungan</span><span>Kebijakan Privasi</span><span>Syarat Layanan</span></div>
-        <div><strong>Tetap Terhubung</strong><span>Karir</span><span>Press Kit</span></div>
+
+        <div className="landing-footer-bottom">
+          <span>&copy; 2026 MindTrack. Dibuat untuk mendukung kesejahteraan mahasiswa.</span>
+          <span><ShieldCheck size={15} />Alat screening, bukan diagnosis medis.</span>
+        </div>
       </footer>
     </main>
   );
@@ -1062,8 +951,10 @@ function RegisterPage({
   return (
     <main className="register-page" data-theme={theme}>
       <header className="register-top-brand">
-        <span className="brand-mark">M</span>
-        <strong>MindTrack</strong>
+        <div>
+          <span className="brand-mark">M</span>
+          <strong>MindTrack</strong>
+        </div>
       </header>
 
       <section className="register-main">
@@ -1132,9 +1023,9 @@ function RegisterPage({
       <footer className="register-footer">
         <div>
           <strong>MindTrack AI</strong>
-          <span>(c) 2024 MindTrack AI. Kecerdasan Suportif untuk Kesehatan Mental.</span>
+          <span>&copy; 2026 MindTrack AI. Kecerdasan suportif untuk kesehatan mental.</span>
         </div>
-        <nav>
+        <nav aria-label="Tautan bantuan registrasi">
           <button type="button">Kebijakan Privasi</button>
           <button type="button">Syarat Layanan</button>
           <button type="button">Hubungi Dukungan</button>
@@ -1391,8 +1282,13 @@ function ResultsView({ latestResult, probabilities, setActiveView, saveReport, s
         <div>
           <h2>Micro-Interventions</h2>
           <div className="intervention-grid">
-            {interventions.map(([Icon, title, text]) => (
-              <button className="intervention-card" type="button" key={title} onClick={() => startSession(title)}>
+            {interventions.map(([Icon, title, text, instruction]) => (
+              <button
+                className="intervention-card"
+                type="button"
+                key={title}
+                onClick={() => startSession(title, instruction)}
+              >
                 <Icon size={24} />
                 <div>
                   <strong>{title}</strong>
@@ -1465,8 +1361,13 @@ function ResourcesView({ startSession }) {
         <p>Short actions and reminders for safer mental wellbeing support.</p>
       </div>
       <div className="intervention-grid resources">
-        {interventions.map(([Icon, title, text]) => (
-          <button className="intervention-card" type="button" key={title} onClick={() => startSession(title)}>
+        {interventions.map(([Icon, title, text, instruction]) => (
+          <button
+            className="intervention-card"
+            type="button"
+            key={title}
+            onClick={() => startSession(title, instruction)}
+          >
             <Icon size={24} />
             <div>
               <strong>{title}</strong>
@@ -1633,53 +1534,44 @@ function HistoryTable({ history, setActiveView }) {
   );
 }
 
-function SettingsView({ health, status, refreshData }) {
-  return (
-    <section className="assessment-card">
-      <div className="section-heading">
-        <span>System settings</span>
-        <h2>Settings</h2>
-        <p>Monitor API, model, and app readiness before deployment.</p>
-      </div>
+function NotificationsPanel({ history, onClose }) {
+  const latest = history[0];
+  const latestResult = latest?.result;
+  const hasAssessment = Boolean(latestResult);
 
-      <div className="settings-grid">
-        <article>
-          <CheckCircle2 size={24} />
-          <strong>API Status</strong>
-          <span>{statusLabel(status, health)}</span>
-        </article>
-        <article>
-          <Brain size={24} />
-          <strong>Model Mode</strong>
-          <span>{health?.model_mode || "Unknown"}</span>
-        </article>
-        <article>
-          <BarChart3 size={24} />
-          <strong>Loaded Models</strong>
-          <span>{health?.n_models ?? 0} models</span>
-        </article>
-      </div>
-
-      <button className="primary-button" type="button" onClick={refreshData}>
-        <RefreshCw size={18} />
-        Refresh System
-      </button>
-    </section>
-  );
-}
-
-function NotificationsPanel({ status, history, onClose }) {
   return (
     <aside className="notifications-panel">
       <div>
-        <strong>Notifications</strong>
+        <strong>Notifikasi</strong>
         <button type="button" onClick={onClose} aria-label="Close notifications">
           <X size={18} />
         </button>
       </div>
-      <p>API status: {status}</p>
-      <p>{history.length ? `Prediksi terakhir: ${history[0].result.stress_class}` : "Belum ada prediksi tersimpan."}</p>
-      <p>Groq AI aktif jika backend dijalankan dengan environment key.</p>
+
+      {hasAssessment ? (
+        <>
+          <article className="notification-item">
+            <strong>Hasil Assessment Terbaru</strong>
+            <p>
+              Tingkat stresmu terdeteksi <em>{latestResult.stress_class}</em>. Luangkan waktu untuk melihat
+              rekomendasi personalmu.
+            </p>
+          </article>
+          <article className="notification-item">
+            <strong>Jeda Singkat Disarankan</strong>
+            <p>Cobalah meditasi mindfulness selama 10 menit untuk membantu menenangkan diri.</p>
+          </article>
+          <article className="notification-item">
+            <strong>Pengingat</strong>
+            <p>Lakukan assessment secara berkala agar kamu dapat memantau perubahan tingkat stres.</p>
+          </article>
+        </>
+      ) : (
+        <article className="notification-item">
+          <strong>Belum Ada Assessment</strong>
+          <p>Isi prediction form untuk mendapatkan rekomendasi yang sesuai dengan kondisimu.</p>
+        </article>
+      )}
     </aside>
   );
 }
@@ -1689,7 +1581,6 @@ function SettingsMenu({
   status,
   theme,
   onClose,
-  onOpenSettings,
   onRefresh,
   onOpenResources,
   onToggleTheme,
@@ -1701,17 +1592,16 @@ function SettingsMenu({
       <div className="settings-menu-head">
         <div>
           <strong>Quick Settings</strong>
-          <span>{statusLabel(status, health)}</span>
+          <div className={`settings-status ${status}`}>
+            <Activity size={15} />
+            <span>{statusLabel(status, health)}</span>
+          </div>
         </div>
         <button type="button" onClick={onClose} aria-label="Close settings menu">
           <X size={18} />
         </button>
       </div>
 
-      <button type="button" onClick={onOpenSettings}>
-        <Settings size={18} />
-        <span>System Settings</span>
-      </button>
       <button type="button" onClick={onRefresh}>
         <RefreshCw size={18} />
         <span>Refresh API Status</span>
@@ -1724,11 +1614,6 @@ function SettingsMenu({
         {isDark ? <Sun size={18} /> : <Moon size={18} />}
         <span>{isDark ? "Light Theme" : "Dark Theme"}</span>
       </button>
-
-      <div className="settings-menu-foot">
-        <span>Model</span>
-        <strong>{health?.model_mode || "Unknown"} - {health?.n_models ?? 0} models</strong>
-      </div>
     </aside>
   );
 }
@@ -1737,15 +1622,15 @@ function SessionModal({ session, onClose }) {
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true">
       <section className="session-modal">
-        <button className="modal-close" type="button" onClick={onClose} aria-label="Close session">
+        <button className="modal-close" type="button" onClick={onClose} aria-label="Tutup sesi">
           <X size={20} />
         </button>
         <TimerReset size={42} />
-        <span>Started at {session.startedAt}</span>
+        <span>Dimulai pukul {session.startedAt}</span>
         <h2>{session.title}</h2>
-        <p>Tarik napas perlahan 4 detik, tahan 4 detik, lalu hembuskan 6 detik. Ulangi sampai tubuh terasa lebih stabil.</p>
+        <p>{session.instruction}</p>
         <button className="primary-button" type="button" onClick={onClose}>
-          Finish Session
+          Selesaikan Sesi
         </button>
       </section>
     </div>

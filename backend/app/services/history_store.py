@@ -21,12 +21,6 @@ class HistoryStore:
             items = [item for item in items if item.get("username") == username]
         return [PredictionResponse.model_validate(item) for item in items]
 
-    def count_all(self) -> int:
-        return len(self._read())
-
-    def recent_raw(self, limit: int = 5) -> list[dict]:
-        return self._read()[:limit]
-
     def get(self, prediction_id: str, username: str | None = None) -> PredictionResponse | None:
         for item in self.all(username):
             if item.id == prediction_id:

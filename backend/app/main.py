@@ -53,18 +53,6 @@ class AuthResponse(BaseModel):
     role: str = "user"
 
 
-class AdminOverviewResponse(BaseModel):
-    api_status: str
-    auth_store: str
-    model_loaded: bool
-    model_available: bool
-    model_mode: str | None = None
-    n_models: int
-    user_count: int
-    prediction_count: int
-    recent_predictions: list[dict]
-
-
 # ── Auth endpoints ──────────────────────────────────────────────────────────
 
 @app.post("/api/auth/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
@@ -97,29 +85,6 @@ def login(payload: AuthPayload):
         raise HTTPException(status_code=401, detail="Username atau password salah.")
 
     return result
-
-
-@app.get("/api/admin/overview", response_model=AdminOverviewResponse)
-def admin_overview(
-    username: str | None = Header(default=None, alias="X-MindTrack-Username"),
-    token: str | None = Header(default=None, alias="X-MindTrack-Token"),
-    role: str | None = Header(default=None, alias="X-MindTrack-Role"),
-):
-    if not user_store.is_admin_session(username, token, role):
-        raise HTTPException(status_code=403, detail="Admin access required")
-
-    status_data = model_status()
-    return AdminOverviewResponse(
-        api_status="online",
-        auth_store=user_store.mode,
-        model_loaded=status_data["loaded"],
-        model_available=status_data["available"],
-        model_mode=status_data["mode"],
-        n_models=status_data["n_models"],
-        user_count=user_store.count_users(),
-        prediction_count=history_store.count_all(),
-        recent_predictions=history_store.recent_raw(5),
-    )
 
 
 # ── Health ──────────────────────────────────────────────────────────────────
