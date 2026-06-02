@@ -195,8 +195,8 @@ function App() {
   const [currentUsername, setCurrentUsername] = useState(
     () => localStorage.getItem("mindtrack-username") || "",
   );
-  const [publicView, setPublicView] = useState("landing");
-  const [activeView, setActiveView] = useState("dashboard");
+  const [publicView, setPublicViewState] = useState("landing");
+  const [activeView, setActiveViewState] = useState("dashboard");
   const [form, setForm] = useState(initialForm);
   const [history, setHistory] = useState([]);
   const [health, setHealth] = useState(null);
@@ -222,6 +222,50 @@ function App() {
   const isFormValid = useMemo(() => Object.values(form).every((value) => value !== ""), [form]);
   const filteredHistory = useMemo(() => filterHistory(history, searchTerm), [history, searchTerm]);
 
+  function setPublicView(view, { replace = false } = {}) {
+    const method = replace ? "replaceState" : "pushState";
+    window.history[method]({ mindtrackScope: "public", view }, "", window.location.href);
+    setPublicViewState(view);
+  }
+
+  function setActiveView(view, { replace = false } = {}) {
+    const method = replace ? "replaceState" : "pushState";
+    window.history[method]({ mindtrackScope: "app", view }, "", window.location.href);
+    setActiveViewState(view);
+  }
+
+  useEffect(() => {
+    if (!window.history.state?.mindtrackScope) {
+      const scope = isAuthenticated ? "app" : "public";
+      const view = isAuthenticated ? activeView : publicView;
+      window.history.replaceState({ mindtrackScope: scope, view }, "", window.location.href);
+    }
+
+    function handlePopState(event) {
+      const historyState = event.state;
+      if (!historyState?.mindtrackScope) {
+        if (!isAuthenticated) {
+          setPublicViewState("landing");
+        }
+        return;
+      }
+
+      if (historyState.mindtrackScope === "public") {
+        if (!isAuthenticated) {
+          setPublicViewState(historyState.view || "landing");
+        }
+        return;
+      }
+
+      if (historyState.mindtrackScope === "app" && isAuthenticated) {
+        setActiveViewState(historyState.view || "dashboard");
+      }
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (!isAuthenticated) {
       return;
@@ -240,7 +284,11 @@ function App() {
     }
 
     if (window.location.hash) {
-      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}${window.location.search}`,
+      );
     }
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [isAuthenticated, publicView]);
@@ -345,7 +393,8 @@ function App() {
     setHealth(null);
     setError("");
     setIsAuthenticated(false);
-    setActiveView("dashboard");
+    setActiveViewState("dashboard");
+    setPublicView("landing");
     setShowNotifications(false);
     setShowSettingsMenu(false);
     setSearchTerm("");
