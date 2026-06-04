@@ -1,189 +1,53 @@
 # MindTrack Capstone
 
-Aplikasi web deteksi tingkat stres mahasiswa. Project ini sudah menggabungkan:
+MindTrack adalah aplikasi web untuk membantu mahasiswa melakukan screening tingkat stres berdasarkan indikator psikologis, akademik, dan aktivitas digital. Aplikasi ini menampilkan hasil prediksi, riwayat assessment, serta rekomendasi tindakan sederhana yang dapat dilakukan pengguna.
 
-- Front-End: React + Vite, berjalan dengan Node.js
-- Back-End: FastAPI
-- Model AI/ML: Keras/TensorFlow MLP ensemble untuk klasifikasi stres mahasiswa
-- Penyimpanan: riwayat prediksi ke file JSON, akun user ke PostgreSQL jika `DATABASE_URL` diisi
+## Tech Stack
 
-## Struktur
+- Frontend: React, Vite, Axios, Lucide React
+- Backend: FastAPI, Uvicorn, Pydantic
+- Model: TensorFlow/Keras ensemble atau remote model API
+- Database: PostgreSQL untuk akun user, file JSON untuk riwayat lokal jika database tidak dikonfigurasi
+- Deployment: Vercel untuk frontend, Render untuk backend, Hugging Face Space untuk model API
 
-```text
-frontend/                  React app
-backend/app/               FastAPI app
-backend/models/            Model, ensemble metadata, dan scaler
-backend/data/              Riwayat prediksi, dataset referensi, data dictionary
-docs/                      Laporan teknis dan daftar fitur
-notebooks/                 Notebook final Data Science
-dashboard/                 Dashboard Streamlit opsional dari tim Data Science
-```
-
-## Pembaruan Aset Terbaru
-
-Aset model dan dokumen Data Science terakhir disinkronkan dari:
+## Struktur Project
 
 ```text
-F:\capstone project-20260528T111144Z-3-001\capstone project\deteksi stress mahasiswa
+frontend/       React + Vite app
+backend/        FastAPI RESTful API
+backend/app/    Source code backend
+backend/models/ Model lokal dan metadata ensemble
+backend/data/   Data lokal untuk fallback/testing
+docs/           Dokumen dan visual pendukung
+notebooks/      Notebook eksperimen model
+AI ENGINEER/    Artefak model, notebook, dan data science
+dashboard/      Dashboard Streamlit opsional
 ```
 
-Bagian yang diperbarui ke project ini:
+## Menjalankan Project Lokal
 
-- `backend/models`: model ensemble `.keras`, `ensemble_meta.json`, dan `scaler_params.json`
-- `backend/data`: dataset bersih dan data dictionary
-- `docs`: visualisasi training/evaluasi, selected features, dan laporan teknis
-- `notebooks`: notebook final Data Science dan notebook training model
-- `dashboard`: dashboard Streamlit opsional dari tim Data Science
+### 1. Backend
 
-## Tutorial Membuka Modul Untuk User Baru
-
-Ikuti langkah ini jika baru menerima folder project dan ingin menjalankan aplikasi MindTrack di laptop sendiri.
-
-### 1. Siapkan kebutuhan utama
-
-Pastikan sudah terpasang:
-
-- Python 3.11 atau 3.12
-- Node.js
-- Browser seperti Chrome, Edge, atau Firefox
-
-Untuk mengecek Python dan Node.js:
-
-```bash
-python --version
-node --version
-npm --version
-```
-
-Jika `python` tidak terbaca di Windows, coba:
-
-```bash
-py --version
-```
-
-### 2. Buka folder project
-
-Contoh jika folder berada di `F:\Program\Projek Gabut\Project Capstone`:
-
-```bash
-cd "F:\Program\Projek Gabut\Project Capstone"
-```
-
-Jika lokasi folder berbeda, sesuaikan path-nya.
-
-### 3. Buat dan aktifkan virtual environment backend
+Gunakan Python 3.11 agar dependency TensorFlow kompatibel.
 
 ```bash
 cd backend
 python -m venv .venv
 .venv\Scripts\activate
-```
-
-Jika perintah `python` tidak bisa, gunakan:
-
-```bash
-py -3.12 -m venv .venv
-.venv\Scripts\activate
-```
-
-Setelah aktif, terminal biasanya menampilkan tanda `(.venv)`.
-
-### 4. Install dependency backend
-
-```bash
 python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Proses ini bisa cukup lama karena TensorFlow ikut di-install.
-
-### 5. Aktifkan fitur saran AI generatif, opsional
-
-Jika ingin fitur `ai_advice` dari Groq aktif, isi environment variable sebelum menjalankan server:
-
-```bash
-$env:GROQ_API_KEY="ISI_API_KEY_GROQ_DI_SINI"
-```
-
-Jika tidak diisi, aplikasi tetap bisa berjalan. Hanya saran AI generatif yang tidak aktif.
-
-### 6. Hubungkan database PostgreSQL, opsional tapi disarankan untuk hosting
-
-Secara default, akun login/register disimpan ke `backend/data/users.json`. Ini aman untuk uji coba lokal, tetapi tidak cocok untuk hosting karena file lokal bisa hilang saat server restart atau redeploy.
-
-Untuk memakai PostgreSQL atau Supabase:
-
-1. Buat database PostgreSQL. Jika memakai Supabase, buka `Project Settings > Database > Connection string`.
-2. Pilih connection string tipe `Transaction pooler`.
-3. Salin `backend/.env.example` menjadi `backend/.env`.
-4. Isi `DATABASE_URL` di `backend/.env`.
-
-Contoh isi `backend/.env`:
-
-```env
-DATABASE_URL=postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
-DATABASE_SSLMODE=require
-```
-
-Atau isi langsung dari PowerShell sebelum menjalankan backend:
-
-```powershell
-$env:DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
-$env:DATABASE_SSLMODE="require"
-```
-
-Saat `DATABASE_URL` aktif, backend otomatis membuat tabel `users` jika belum ada.
-
-### 7. Jalankan aplikasi
-
-Masih dari folder `backend`, jalankan:
-
-```bash
-uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-Lalu buka browser ke:
+Backend tersedia di:
 
 ```text
 http://127.0.0.1:8000
+http://127.0.0.1:8000/docs
 ```
 
-Jika halaman MindTrack muncul, modul sudah berhasil dijalankan.
+### 2. Frontend
 
-### 8. Cara mematikan aplikasi
-
-Klik terminal yang menjalankan `uvicorn`, lalu tekan:
-
-```text
-Ctrl + C
-```
-
-Untuk keluar dari virtual environment:
-
-```bash
-deactivate
-```
-
-## Catatan Untuk Pengiriman Project
-
-Folder yang boleh dihapus sebelum project dikirim agar ukuran lebih kecil:
-
-- `backend/.venv`
-- `frontend/node_modules`
-
-Folder/file penting yang jangan dihapus:
-
-- `backend/app`
-- `backend/models`
-- `backend/data`
-- `backend/requirements.txt`
-- `frontend/src`
-- `frontend/dist`
-- `frontend/package.json`
-- `frontend/package-lock.json`
-
-Jika `backend/.venv` dihapus, user baru cukup membuat ulang dengan langkah tutorial di atas.
-
-## Menjalankan Front-End
+Buka terminal baru dari root project.
 
 ```bash
 cd frontend
@@ -191,130 +55,140 @@ npm install
 npm run dev
 ```
 
-React app tersedia di:
+Frontend tersedia di:
 
 ```text
 http://127.0.0.1:5173
 ```
 
-## Build Front-End Untuk Disajikan Dari FastAPI
+## Environment Variable
 
-Untuk hosting satu service, build React terlebih dahulu:
+### Backend
 
-```bash
-cd frontend
-npm install
-npm run build
+Salin `backend/.env.example` menjadi `backend/.env`, lalu isi sesuai kebutuhan.
+
+```env
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE
+DATABASE_SSLMODE=require
+MODEL_API_URL=https://zidanpw-mindtrack-stress-detection-api.hf.space
+GROQ_API_KEY=isi_api_key_groq_jika_digunakan
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://domain-frontend.vercel.app
 ```
 
-Hasil build masuk ke `frontend/dist` dan otomatis disajikan oleh FastAPI.
+Catatan:
 
-## Menjalankan Back-End
+- `DATABASE_URL` dipakai untuk login/register berbasis PostgreSQL.
+- `MODEL_API_URL` dipakai jika prediksi diarahkan ke model API terpisah.
+- `GROQ_API_KEY` bersifat opsional untuk saran AI generatif.
+- Jangan commit file `.env` asli karena berisi password dan API key.
 
-Gunakan Python resmi 3.11 atau 3.12 agar TensorFlow kompatibel.
+### Frontend
 
-```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+Untuk deployment frontend di Vercel, isi:
+
+```env
+VITE_BACKEND_URL=https://url-backend-render.onrender.com
+VITE_MODEL_API_URL=https://zidanpw-mindtrack-stress-detection-api.hf.space/
 ```
 
-API tersedia di:
+## Build dan Deployment
+
+### Backend di Render
+
+Pengaturan umum:
 
 ```text
-http://127.0.0.1:8000
-http://127.0.0.1:8000/docs
+Root Directory : backend
+Build Command  : pip install -r requirements.txt
+Start Command  : python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
 
-Jika `frontend/dist` sudah ada, aplikasi React juga tersedia langsung dari FastAPI:
+Environment penting di Render:
 
 ```text
-http://127.0.0.1:8000
-```
-
-Untuk hosting satu service, start command yang dipakai:
-
-```bash
-cd backend
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-Pada platform seperti Render/Railway, port biasanya dari environment variable:
-
-```bash
-cd backend
-python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
-```
-
-Untuk hosting dengan database, tambahkan environment variable berikut di dashboard hosting:
-
-```text
+PYTHON_VERSION=3.11.11
 DATABASE_URL=connection-string-postgresql
 DATABASE_SSLMODE=require
+MODEL_API_URL=https://zidanpw-mindtrack-stress-detection-api.hf.space
+GROQ_API_KEY=api-key-groq
+CORS_ORIGINS=https://domain-frontend.vercel.app,http://localhost:5173,http://127.0.0.1:5173
 ```
 
-Jika memakai Supabase, gunakan connection string dari `Transaction pooler`. Jangan menaruh password database langsung di source code.
+Tes backend setelah deploy:
+
+```text
+https://url-backend-render.onrender.com/api/health
+```
+
+### Frontend di Vercel
+
+Pengaturan umum:
+
+```text
+Root Directory   : frontend
+Framework Preset : Vite
+Install Command  : npm install
+Build Command    : npm run build
+Output Directory : dist
+```
+
+Setelah deployment berhasil, pastikan `VITE_BACKEND_URL` mengarah ke backend Render.
 
 ## Endpoint RESTful
 
-- `GET /api/health`
-- `POST /api/predictions`
-- `GET /api/predictions`
-- `GET /api/predictions/{prediction_id}`
-- `DELETE /api/predictions/{prediction_id}`
-
-## Input Model
-
-Model memakai daftar fitur dari `backend/models/ensemble_meta.json`. Pada aset terbaru, ensemble memakai 26 fitur setelah fitur turunan dihitung oleh backend. Jika `ensemble_meta.json` tersedia, backend otomatis memakai ensemble; jika tidak, backend fallback ke `stress_mlp_final.keras`.
-
-Fitur utama yang dikirim dari UI:
-
-- `anxiety_level`
-- `self_esteem`
-- `mental_health_history`
-- `depression`
-- `sleep_quality`
-- `study_load`
-- `social_support`
-- `Daily_Screen_Time_Hours`
-- `Social_Media_Usage_Hours`
-- `Gaming_App_Usage_Hours`
-- `digital_overload_score`
-- `mental_risk_score`
-
-Back-end otomatis menambahkan fitur turunan sebelum inference sesuai scaler model.
-
-## Dashboard Streamlit Opsional
-
-Dashboard eksplorasi dari tim Data Science tersedia di folder `dashboard`.
-
-```bash
-cd dashboard
-python -m pip install -r requirements.txt
-streamlit run app.py
+```text
+GET    /api/health
+POST   /api/auth/register
+POST   /api/auth/login
+POST   /api/predictions
+GET    /api/predictions
+GET    /api/predictions/{prediction_id}
+DELETE /api/predictions/{prediction_id}
 ```
 
-## Output Model
+## Input Utama Model
+
+Form prediksi memakai indikator seperti:
+
+- anxiety level
+- self esteem
+- depression
+- sleep quality
+- study load
+- social support
+- daily screen time
+- social media usage
+- gaming app usage
+- digital overload score
+- mental risk score
+
+Backend menyesuaikan payload sebelum dikirim ke model lokal atau model API remote.
+
+## Output Prediksi
 
 API mengembalikan:
 
-- `stress_level`: 0, 1, atau 2
-- `stress_class`: Rendah, Sedang, atau Tinggi
+- `stress_level`
+- `stress_class`
 - `confidence`
 - `probabilities`
 - `recommendation`
 - `ai_advice`
 
-`ai_advice` memakai API generatif hanya jika `GROQ_API_KEY` tersedia di environment variable. Tidak ada API key yang disimpan di source code.
+`ai_advice` hanya aktif jika `GROQ_API_KEY` tersedia dan koneksi ke Groq berhasil.
 
 ## Checklist Capstone
 
-- React memakai module bundler Vite.
-- Front-end memakai networking call ke FastAPI dengan Axios.
-- Back-end menyediakan RESTful API.
-- URL endpoint mengikuti konvensi RESTful.
-- API menyimpan riwayat prediksi.
-- Model AI/ML asli terintegrasi melalui file `.keras`, ensemble metadata, dan scaler.
-- UI responsif dengan validasi input, loading state, error handling, dan riwayat hasil.
+- Frontend memakai React dan Vite.
+- Frontend melakukan request API menggunakan Axios.
+- Backend menyediakan RESTful API dengan FastAPI.
+- Model AI/ML terhubung melalui local model atau remote model API.
+- Login/register terhubung ke PostgreSQL jika `DATABASE_URL` aktif.
+- Riwayat prediksi disimpan dan ditampilkan per user.
+- UI sudah mendukung tampilan responsif, loading state, error handling, dan dark mode.
+
+## Catatan Keamanan
+
+- Jangan commit `.env`, password database, API key, atau token pribadi.
+- Gunakan environment variable di Render dan Vercel.
+- Untuk hosting, gunakan PostgreSQL/Supabase daripada file JSON lokal.
