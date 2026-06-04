@@ -1,0 +1,25 @@
+column_name,description,data_type,role
+anxiety_level,Tingkat kecemasan mahasiswa.,int64,feature
+self_esteem,Tingkat kepercayaan diri mahasiswa.,int64,feature
+mental_health_history,Riwayat kesehatan mental.,int64,feature
+depression,Tingkat depresi mahasiswa.,int64,feature
+headache,Intensitas sakit kepala.,int64,feature
+sleep_quality,Kualitas tidur mahasiswa.,int64,feature
+academic_performance,Performa akademik mahasiswa.,int64,feature
+study_load,Beban belajar mahasiswa.,int64,feature
+future_career_concerns,Kekhawatiran terhadap karier masa depan.,int64,feature
+social_support,Dukungan sosial yang diterima mahasiswa.,int64,feature
+peer_pressure,Tekanan dari teman sebaya.,int64,feature
+bullying,Pengalaman bullying.,int64,feature
+stress_level,Target atau label tingkat stres mahasiswa.,int64,target
+Age,Usia pengguna smartphone.,int64,feature
+Total_App_Usage_Hours,Total durasi penggunaan aplikasi per hari.,float64,feature
+Daily_Screen_Time_Hours,Durasi screen time harian.,float64,feature
+Number_of_Apps_Used,Jumlah aplikasi yang digunakan.,int64,feature
+Social_Media_Usage_Hours,Durasi penggunaan media sosial.,float64,feature
+Productivity_App_Usage_Hours,Durasi penggunaan aplikasi produktivitas.,float64,feature
+Gaming_App_Usage_Hours,Durasi penggunaan aplikasi game.,float64,feature
+digital_overload_score,Skor gabungan penggunaan digital berlebih.,float64,feature
+productivity_balance_score,Rasio penggunaan aplikasi produktivitas terhadap total penggunaan aplikasi.,float64,feature
+study_stress_ratio,Rasio beban belajar terhadap kualitas tidur.,float64,feature
+mental_risk_score,Skor gabungan risiko mental dari beberapa indikator psikologis dan sosial.,int64,feature
