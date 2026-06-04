@@ -1,0 +1,59 @@
+{
+  "ensemble_paths": [
+    "ensemble_model_0.keras",
+    "ensemble_model_1.keras",
+    "ensemble_model_2.keras",
+    "ensemble_model_3.keras",
+    "ensemble_model_4.keras",
+    "ensemble_model_5.keras",
+    "ensemble_model_7.keras",
+    "ensemble_model_8.keras"
+  ],
+  "ensemble_weights": [
+    0.12633546698921966,
+    0.14210807464648983,
+    0.09984776756709018,
+    0.09984776756709018,
+    0.09984776756709018,
+    0.15984984550265335,
+    0.15984984550265335,
+    0.11231346465771323
+  ],
+  "temperature": 0.95,
+  "features": [
+    "anxiety_level",
+    "self_esteem",
+    "mental_health_history",
+    "depression",
+    "headache",
+    "sleep_quality",
+    "academic_performance",
+    "study_load",
+    "future_career_concerns",
+    "social_support",
+    "peer_pressure",
+    "bullying",
+    "Age",
+    "Total_App_Usage_Hours",
+    "Daily_Screen_Time_Hours",
+    "Number_of_Apps_Used",
+    "Social_Media_Usage_Hours",
+    "Productivity_App_Usage_Hours",
+    "Gaming_App_Usage_Hours",
+    "screen_to_sleep_ratio",
+    "social_vs_productivity",
+    "anxiety_depression_sum",
+    "support_pressure_diff",
+    "passive_screen_ratio",
+    "academic_stress_index",
+    "wellbeing_deficit"
+  ],
+  "class_names": [
+    "Rendah",
+    "Sedang",
+    "Tinggi"
+  ],
+  "n_models": 8,
+  "scaler_path": "scaler_params.json",
+  "min_val_acc": 0.87
+}

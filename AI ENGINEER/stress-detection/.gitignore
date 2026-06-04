@@ -1,0 +1,18 @@
+﻿# model artifacts
+models/*.keras
+models/*.h5
+models/*.json
+models/*.png
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# jupyter
+.ipynb_checkpoints/
+
+# env
+venv/
+.venv/
